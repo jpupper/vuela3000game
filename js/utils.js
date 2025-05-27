@@ -268,32 +268,54 @@ class imgManager {
 }
 
 
-class pngSequence{
-	constructor(dir, cnt,_index) {
-		this.imgs = [];
-		let dir2 = dir + ".png";
-		this.indx = _index;
+class pngSequence {
+    constructor(dir, cnt, _index) {
+        this.imgs = [];
+        let dir2 = dir + ".png";
+        this.indx = _index;
+        this.speed = 0.2;  // Ahora puede ser un valor fraccionario
+        this.index = 0;     // Índice flotante
+        this.currentFrame = 0; // Frame actual (índice entero)
+        
+        for(let i = 0; i < cnt; i++) {
+            let str = dir + "/" + (i+1) + ".png";
+            console.log(str);
+            let img = loadImage(str);
+            this.imgs.push(img);
+        }
+    }
 
-		this.index = 0;
-		//this.w = w;
-		//this.h = h;
-		for(let i = 0; i<cnt; i++){
-			let  str = dir+"/" + (i+1) + ".png";
-			console.log (str)
-			let img = loadImage(str);
-			this.imgs.push(img)
-		}
+    display() {
+        // Usamos currentFrame en lugar de index para acceder al array
+        image(this.imgs[this.currentFrame], 0, 0, 
+              this.imgs[this.currentFrame].width, 
+              this.imgs[this.currentFrame].height);
+    }
 
-	}
-	display(){
+    update() {
+        // Sumamos la velocidad al índice flotante
+        this.index += this.speed;
+        
+        // Si superamos el número de frames, volvemos al inicio
+        if (this.index >= this.imgs.length) {
+            this.index = 0;
+        }
+        
+        // Actualizamos el frame actual redondeando el índice
+        this.currentFrame = Math.floor(this.index);
+    }
 
-	}
-	update(){
-		this.index+=1;
-		if(this.index >this.imgs.length-1 ){
-			this.index = 0;
-		}
-	}
+    getW() {
+        return this.imgs[this.currentFrame].width;
+    }
+
+    getH() {
+        return this.imgs[this.currentFrame].height;
+    }
+
+    getActiveImg() {
+        return this.imgs[this.currentFrame];
+    }
 }
 
 

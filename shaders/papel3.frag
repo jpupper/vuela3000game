@@ -343,7 +343,9 @@ vec3 patronMenu(vec2 uv){
 
     vec3 fin = mix(vec3(255),vec3(0),uv.x);
 
+    
 
+    vec3 vio = vec3(130./255.,117./255.,154./255.);;
     vec2 p = vec2(0.5) - vTexCoord;
     float r = length(p);
     float a = atan(p.x,p.y);
@@ -371,17 +373,15 @@ vec3 patronMenu(vec2 uv){
     float e4 = snoise(vec2(uv.x*40.,uv.y*30.-t*1.));
     
 
-    vec3 vio = vec3(130./255.,117./255.,154./255.);;
-
-    fin2 = mix(fin2,vec3(vio),e4);
+    fin2 = mix(fin2,vec3(0.0),e4);
     
-    fin2 = mix(fin2,vec3(vio),nsin(vec2(uv.x*.05,uv.y*.001-t*.001),100.0)*.2);
-    fin2 = mix(fin2,vec3(1.3)*fin2,sin(uv.y*3.+sin(uv.x*10.+t)-t)*.5+.5);
+    fin2 = mix(fin2,vec3(0.0),nsin(vec2(uv.x*.05,uv.y*.001-t*.001),100.0)*.2);
+    fin2 = mix(fin2,vec3(vio)*fin2,sin(uv.y*3.+sin(uv.x*10.+t)-t)*.5+.5);
     fin2 = mix(fin2,fin2*.7,sin(uv.x*10.+sin(uv.y*100.-t)+t)*.5+.5);
     
     fin2 = mix(fin2,fin2*.1,smoothstep(0.6,0.9,snoise(vec2(uv.x*30.,uv.y*10.-t*10.))*5.));
     
-    return vio;
+    return fin2;
 }
 
 void main(void){   
@@ -392,6 +392,6 @@ void main(void){
         fin = patronJuego(vTexCoord);
     }
 
-       fin = patronMenu(vTexCoordwefawef);
-    gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+    gl_FragColor = vec4(fin,1.0);
+    
 }
