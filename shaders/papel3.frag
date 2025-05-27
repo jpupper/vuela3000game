@@ -362,36 +362,49 @@ vec3 patronMenu(vec2 uv){
 
     float t = -time;
     float e2 = nsin(uv,10.);         
-    e2 = snoise(vec2(uv.x*1000.,uv.y*1000.-t*1.));
-    e2-=noise(uv*10000.,time*30.)*.1; 
-    vec3 fin2 =  mix(vec3(0.0),vec3(1.2),e2);  
+    //e2 = snoise(vec2(uv.x*1000.,uv.y*1000.-t*1.));
+    //e2-=noise(uv*10000.,time*30.)*.1; 
+    //vec3 fin2 =  mix(vec3(0.0),vec3(1.2),e2);  
     
 
-    float e3 = snoise(vec2(uv.x*4.,uv.y*3.-t*1.));
-    fin2 = mix(fin2,vec3(0.0),e3*3.);
+    float e3 =  nsin(uv,10.);
+    fin = mix(fin,vec3(0.0),e3*3.);
     
-    float e4 = snoise(vec2(uv.x*40.,uv.y*30.-t*1.));
+    float e4 = nsin(uv,100.);
     
 
-    fin2 = mix(fin2,vec3(0.0),e4);
+    fin = mix(fin,vec3(0.0),e4);
     
-    fin2 = mix(fin2,vec3(0.0),nsin(vec2(uv.x*.05,uv.y*.001-t*.001),100.0)*.2);
-    fin2 = mix(fin2,vec3(vio)*fin2,sin(uv.y*3.+sin(uv.x*10.+t)-t)*.5+.5);
-    fin2 = mix(fin2,fin2*.7,sin(uv.x*10.+sin(uv.y*100.-t)+t)*.5+.5);
+    fin = mix(fin,vec3(0.0),nsin(vec2(uv.x*.05,uv.y*.001-t*.001),100.0)*.2);
+    fin = mix(fin,vec3(0.0)*fin,sin(uv.y*3.+sin(uv.x*10.+t)-t)*.5+.5);
+    fin = mix(fin,fin*.7,sin(uv.x*10.+sin(uv.y*100.-t)+t)*.5+.5);
     
-    fin2 = mix(fin2,fin2*.1,smoothstep(0.6,0.9,snoise(vec2(uv.x*30.,uv.y*10.-t*10.))*5.));
+    fin = mix(fin,fin*.1,smoothstep(0.6,0.9,nsin(vec2(uv.x*30.,uv.y*10.-t*10.),10.)*5.));
     
-    return fin2;
+    return fin;
+}
+vec3 patronLight(){
+    vec2 uv = vTexCoord;
+
+    vec3 c1 = vec3(0.0);
+    vec3 c2 = vec3(0.05);
+
+    float e = sin(uv.x+sin(uv.y*10.+time*.5)+time*1.2)*.5+.5;
+    
+
+    c2-=vec3(sin(uv.y*5000.+time*0.011)*.2*.2);
+    c2-=vec3(sin(uv.x*5000.+time*0.011)*.2*.2);
+
+    
+    vec3 fin = mix(c1,c2,e);
+
+
+    return fin;
 }
 
 void main(void){   
     vec3 fin = vec3(0.0);
-    if(modo == 0 || modo == 2){
-        fin = patronMenu(vTexCoord);
-    }else{
-        fin = patronJuego(vTexCoord);
-    }
-
-    gl_FragColor = vec4(fin,1.0);
+    fin = patronLight();
+    gl_FragColor = vec4(patronLight(),1.0);
     
 }

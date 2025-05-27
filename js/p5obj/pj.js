@@ -75,9 +75,10 @@ class Pelus {
             this.w = imgsPjs[this.pjindex].width*imgsc;
             this.h = imgsPjs[this.pjindex].height*imgsc;
         }else{
-            this.w = seqRati.getW()*imgsc;
-            this.h = seqRati.getH()*imgsc;
+            this.w = seqRati.getW()*.4;
+            this.h = seqRati.getH()*.4;
         }
+        
         this.wpeluca = imgsPelus[this.plindex].width*imgsc;
         this.hpeluca = imgsPelus[this.plindex].height*imgsc;
 
@@ -119,7 +120,7 @@ class Pelus {
       
       fill(255,10);
       //RECTANGULO DE COLISION 
-      rect(this.pos.x,this.pos.y,this.w,this.h);
+    //  rect(this.pos.x,this.pos.y,this.w,this.h);
 
       let scimg = 0.2;
       if(this.type == 0){
