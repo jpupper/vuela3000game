@@ -16,10 +16,11 @@ let seqStart ;
 
 let imgsPelus =[];
 let imgsPjs =[];
-let debugmode = true;
+let debugmode = false;
 
 
 let seqRati;
+
 function preload(){
   sh = loadShader("shaders/base.vert","shaders/papel3.frag");
   seqStart = new pngSequence("img/anistart",3,0);
@@ -67,7 +68,9 @@ function debug(){
   textAlign(CORNER)
   textSize(20 )
   fill(255)
-  text("FRAMERATE: "+frameRate().toFixed(2),100,300);
+  if(debugmode){
+    text("FRAMERATE: "+frameRate().toFixed(2),100,300);
+  }
 }
 function restart() {
   pantalla = 0;
@@ -110,6 +113,15 @@ function keyPressed(){
   if(key == "d"){
     debugmode = !debugmode;
   }
+    if(keyCode === 34 || keyCode === 33 || key === ' '){
+      if(pantalla == 1){
+        avion.jump();
+      }
+      if(pantalla ==0){
+        pantalla = 1;
+
+      }
+    }
 }
 function dibujarFondo() {
   //fill(0, 120);

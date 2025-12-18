@@ -64,7 +64,7 @@ class Avion {
       this.seed = random(9999);
       this.fuegomanager = new FuegoManager();
       this.lt = millis();
-      this.dur = 200;
+      this.dur = 100;
     }
   
     display() {
@@ -79,7 +79,13 @@ class Avion {
       push();
       translate(this.pos.x, this.pos.y);
       rotate(a);
-      //rect(0, 0, this.w, this.h, 70);
+     
+
+      if(debugmode){
+        fill(255,0,0);
+        rect(0, 0, this.w, this.h, 70);
+      }
+      
       this.display2(0,0);
     
       pop();
@@ -149,13 +155,15 @@ class Avion {
 
 
     }
-
+    jump() {
+      this.accel.mult(0);
+      this.accel.add(createVector(0, -this.jumpforce));
+    }
 
     update() {
       if (mouseIsPressed && !this.mflag) {
         this.mflag = true;
-        this.accel.mult(0);
-        this.accel.add(createVector(0, -this.jumpforce));
+        this.jump();
       }
       if (!mouseIsPressed) {
         this.mflag = false;

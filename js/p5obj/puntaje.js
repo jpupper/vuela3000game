@@ -14,7 +14,7 @@ class Puntaje{
     display2(){
       
       //DIBUJAR NUMEROS: 
-      let w = 150;
+      let w = 200;
       let h = 75;
       noStroke();
       rectMode(CENTER);
@@ -45,9 +45,10 @@ class Puntaje{
       let sep = 30;
   
       //console.log(numeroToArray(50));
-      this.dibujarNum(-sep,0,numeroToArray(this.puntos)[0]);
-      this.dibujarNum(0,0,numeroToArray(this.puntos)[1]);
-      this.dibujarNum(+sep,0,numeroToArray(this.puntos)[2]);
+      this.dibujarNum(-sep*1.5,0,numeroToArray(this.puntos)[0]);
+      this.dibujarNum(-sep*0.5,0,numeroToArray(this.puntos)[1]);
+      this.dibujarNum(+sep*0.5,0,numeroToArray(this.puntos)[2]);
+      this.dibujarNum(+sep*1.5,0,numeroToArray(this.puntos)[3]);
   
       //_ps.fill(255,0,0);
       //_ps.ellipse(this.x,this.y,50,50);
@@ -86,9 +87,10 @@ class Puntaje{
       let sep = 30;
   
       //console.log(numeroToArray(50));
-      this.dibujarNum(_ps,-sep,0,numeroToArray(this.puntos)[0]);
-      this.dibujarNum(_ps,0,0,numeroToArray(this.puntos)[1]);
-      this.dibujarNum(_ps,+sep,0,numeroToArray(this.puntos)[2]);
+      this.dibujarNum(_ps,-sep*1.5,0,numeroToArray(this.puntos)[0]);
+      this.dibujarNum(_ps,-sep*0.5,0,numeroToArray(this.puntos)[1]);
+      this.dibujarNum(_ps,+sep*0.5,0,numeroToArray(this.puntos)[2]);
+      this.dibujarNum(_ps,+sep*1.5,0,numeroToArray(this.puntos)[3]);
   
       //_ps.fill(255,0,0);
       //_ps.ellipse(this.x,this.y,50,50);
@@ -111,20 +113,19 @@ class Puntaje{
   
   }
   function numeroToArray(numero) {
-    // Asegurarse de que el número esté en el rango de 0 a 999
-    numero = Math.min(Math.max(numero, 0), 999);
+    // Asegurarse de que el número esté en el rango de 0 a 9999
+    numero = Math.min(Math.max(numero, 0), 9999);
     
     // Convertir el número a una cadena
     var numeroStr = numero.toString();
     
     // Rellenar la cadena con ceros a la izquierda si es necesario
-    while (numeroStr.length < 3) {
+    while (numeroStr.length < 4) {
       numeroStr = "0" + numeroStr;
     }
     
-    // Crear un array de tres números a partir de los dígitos de la cadena
+    // Crear un array de cuatro números a partir de los dígitos de la cadena
     var array = numeroStr.split("").map(Number);
     
     return array;
   }
- 

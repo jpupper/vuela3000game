@@ -3,7 +3,7 @@ class Pelus {
     constructor() {
       this.pls = [];
       this.lasttime = 0;
-      this.duration = 1000;
+      this.duration = 400;
     }
   
     display() {
@@ -38,10 +38,10 @@ class Pelus {
             _a.pos.y + _a.w / 2 > p.pos.y &&
             p.modopeluca == 0) {
           if (p.type == 0) {
-            puntomanager.puntos++;
+            puntomanager.puntos += 100;
             p.modopeluca = 1;
           } else if (p.type == 1) {
-            puntomanager.puntos--;
+            puntomanager.puntos -= 100;
             Perder();
           }
           //this.pls.splice(i, 1);
@@ -53,7 +53,7 @@ class Pelus {
   class Peluc {
     constructor(_x, _y) {
       this.pos = createVector(_x, _y);
-      this.speed = createVector(-random(3, 4), 0);
+      this.speed = createVector(-random(3, 5), 0);
       this.accel = createVector(0, 0);
       this.w = 120;
       this.h = 100;
@@ -64,7 +64,7 @@ class Pelus {
 
       let stvel = 0.5;
       this.pospeluc = createVector(_x,_y);
-      this.velpeluc2 = createVector(random(50,10),-random(0,5));
+      this.velpeluc2 = createVector(random(5,10),-random(0,5));
       this.modopeluca = 0;
 
       this.pjindex = floor(random(imgsPjs.length));
@@ -75,13 +75,18 @@ class Pelus {
             this.w = imgsPjs[this.pjindex].width*imgsc;
             this.h = imgsPjs[this.pjindex].height*imgsc;
         }else{
-            this.w = seqRati.getW()*.4;
-            this.h = seqRati.getH()*.4;
+            this.w = seqRati.getW()*.2;
+            this.h = seqRati.getH()*.2;
         }
         
         this.wpeluca = imgsPelus[this.plindex].width*imgsc;
         this.hpeluca = imgsPelus[this.plindex].height*imgsc;
 
+
+        //Esto es para la oscilación en y
+        this.freq = random(0.001,0.0001);
+        this.radio = random(0,10);
+        this.oscya = random(TWO_PI);
     }
   
     display() {
@@ -166,8 +171,17 @@ class Pelus {
 
     update() {
       this.speed.add(this.accel);
+
+
       this.pos.add(this.speed);
 
+
+      let t = millis()*this.freq;
+      let oscy = sin(t+this.oscya)*this.radio;
+      this.pos.add(createVector(0,oscy));   
+      
+      
+      
       if(this.modopeluca == 0){
         this.pospeluc.x = this.pos.x;
         this.pospeluc.y = this.pos.y;   
