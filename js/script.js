@@ -21,6 +21,8 @@ let imgsPelus =[];
 let imgsPjs =[];
 let debugmode = false;
 
+let particulasRojas = [];
+let particulasColores = [];
 
 let seqRati;
 
@@ -211,6 +213,9 @@ function dibujarJuego() {
 
   pelus.collide(avion);
   
+  actualizarParticulas();
+  dibujarParticulas();
+  
   dibujarVidas();
 
   if(puntomanager.puntos >= 3000){
@@ -230,10 +235,13 @@ function dibujarGameOver() {
   textAlign(CENTER, CENTER);
   
   let marco = min(width, height) * 0.8;
+  // Marco exterior NEGRO
   fill(0);
-  rect(centerX, centerY, marco + 40, marco + 40);
+  rect(centerX, centerY, marco + 60, marco + 60);
+  // Marco medio BLANCO
   fill(255);
-  rect(centerX, centerY, marco + 20, marco + 20);
+  rect(centerX, centerY, marco + 40, marco + 40);
+  // Marco interior COLOR (morado)
   fill(130, 117, 154);
   rect(centerX, centerY, marco, marco);
   
@@ -291,16 +299,36 @@ function dibujarGameOver() {
     rect(x, y, boxSize * 0.6, boxSize * 1.5);
   }
   
+  // Contenedor para texto PERDISTE
+  let containerW = marco * 0.7;
+  let containerH = marco * 0.2;
+  let containerY = centerY - marco * 0.15;
+  
+  // Contenedor animado con colores
+  let containerColorIndex = floor(t * 2) % 5;
+  fill(colores[containerColorIndex]);
+  rect(centerX, containerY, containerW + 20, containerH + 20);
+  fill(255);
+  rect(centerX, containerY, containerW + 10, containerH + 10);
+  fill(0);
+  rect(centerX, containerY, containerW, containerH);
+  
   // Texto PERDISTE con letras alternando blanco/negro
+  textAlign(CENTER, CENTER);
   let palabra = "PERDISTE";
   textSize(marco * 0.14);
-  let charWidth = marco * 0.08;
-  let startTextX = centerX - (palabra.length * charWidth) / 2;
+  
+  // Dibujar cada letra con color alternado
+  let totalWidth = textWidth(palabra);
+  let startX = centerX - totalWidth / 2;
+  let currentX = startX;
   
   for (let i = 0; i < palabra.length; i++) {
-    let charCol = (i + floor(t * 3)) % 2 == 0 ? color(0) : color(255);
+    let charCol = (i + floor(t * 3)) % 2 == 0 ? color(255) : color(254, 235, 44);
     fill(charCol);
-    text(palabra[i], startTextX + i * charWidth, centerY - marco * 0.15);
+    let charW = textWidth(palabra[i]);
+    text(palabra[i], currentX + charW/2, containerY);
+    currentX += charW;
   }
   
   // Mostrar solo el número del puntaje (sin la palabra PUNTOS)
@@ -322,15 +350,32 @@ function dibujarGameOver() {
   let boxY = centerY + marco * 0.25;
   
   if (elapsedTime > waitTime) {
+    // Contenedor para REINICIAR
+    let btnW = marco * 0.5;
+    let btnH = marco * 0.15;
+    let btnColorIndex = floor(t * 3) % 5;
+    
+    fill(colores[btnColorIndex]);
+    rect(centerX, boxY, btnW + 20, btnH + 20);
+    fill(255);
+    rect(centerX, boxY, btnW + 10, btnH + 10);
+    fill(255, 7, 78);
+    rect(centerX, boxY, btnW, btnH);
+    
+    textAlign(CENTER, CENTER);
     let reiniciarText = "REINICIAR";
     textSize(marco * 0.08);
-    let reiniciarCharWidth = marco * 0.05;
-    let startReiniciarX = centerX - (reiniciarText.length * reiniciarCharWidth) / 2;
+    
+    let totalWidthReiniciar = textWidth(reiniciarText);
+    let startXReiniciar = centerX - totalWidthReiniciar / 2;
+    let currentXReiniciar = startXReiniciar;
     
     for (let i = 0; i < reiniciarText.length; i++) {
-      let charCol = (i + floor(t * 5)) % 2 == 0 ? color(255, 7, 78) : color(255);
+      let charCol = (i + floor(t * 5)) % 2 == 0 ? color(0) : color(255);
       fill(charCol);
-      text(reiniciarText[i], startReiniciarX + i * reiniciarCharWidth, boxY);
+      let charW = textWidth(reiniciarText[i]);
+      text(reiniciarText[i], currentXReiniciar + charW/2, boxY);
+      currentXReiniciar += charW;
     }
   } else {
     fill(100);
@@ -353,10 +398,13 @@ function dibujarVictoria() {
   textAlign(CENTER, CENTER);
   
   let marco = min(width, height) * 0.8;
+  // Marco exterior NEGRO
   fill(0);
-  rect(centerX, centerY, marco + 40, marco + 40);
+  rect(centerX, centerY, marco + 60, marco + 60);
+  // Marco medio BLANCO
   fill(255);
-  rect(centerX, centerY, marco + 20, marco + 20);
+  rect(centerX, centerY, marco + 40, marco + 40);
+  // Marco interior COLOR (morado)
   fill(130, 117, 154);
   rect(centerX, centerY, marco, marco);
   
@@ -429,16 +477,35 @@ function dibujarVictoria() {
     triangle(x, y + boxSize/2, x - boxSize/2, y - boxSize/2, x + boxSize/2, y - boxSize/2);
   }
   
+  // Contenedor para texto GANASTE
+  let containerW = marco * 0.7;
+  let containerH = marco * 0.2;
+  let containerY = centerY - marco * 0.15;
+  
+  // Contenedor animado con colores
+  let containerColorIndex = floor(t * 3) % 5;
+  fill(colores[containerColorIndex]);
+  rect(centerX, containerY, containerW + 20, containerH + 20);
+  fill(255);
+  rect(centerX, containerY, containerW + 10, containerH + 10);
+  fill(0);
+  rect(centerX, containerY, containerW, containerH);
+  
   // Texto GANASTE con letras alternando colores
+  textAlign(CENTER, CENTER);
   let palabra = "GANASTE";
   textSize(marco * 0.14);
-  let charWidth = marco * 0.08;
-  let startTextX = centerX - (palabra.length * charWidth) / 2;
+  
+  let totalWidthGanaste = textWidth(palabra);
+  let startXGanaste = centerX - totalWidthGanaste / 2;
+  let currentXGanaste = startXGanaste;
   
   for (let i = 0; i < palabra.length; i++) {
     let charCol = (i + floor(t * 4)) % 2 == 0 ? color(254, 235, 44) : color(255, 161, 8);
     fill(charCol);
-    text(palabra[i], startTextX + i * charWidth, centerY - marco * 0.15);
+    let charW = textWidth(palabra[i]);
+    text(palabra[i], currentXGanaste + charW/2, containerY);
+    currentXGanaste += charW;
   }
   
   // Mostrar solo el número 3000 con animación
@@ -454,17 +521,33 @@ function dibujarVictoria() {
     text(puntajeStr[i], startPuntajeX + i * puntajeCharWidth, puntajeY);
   }
   
-  // Botón JUGAR DE NUEVO
+  // Contenedor para botón JUGAR DE NUEVO
   let btnY = centerY + marco * 0.25;
+  let btnW = marco * 0.65;
+  let btnH = marco * 0.15;
+  let btnColorIndex = floor(t * 4) % 5;
+  
+  fill(colores[btnColorIndex]);
+  rect(centerX, btnY, btnW + 20, btnH + 20);
+  fill(255);
+  rect(centerX, btnY, btnW + 10, btnH + 10);
+  fill(0, 255, 100);
+  rect(centerX, btnY, btnW, btnH);
+  
+  textAlign(CENTER, CENTER);
   let btnText = "JUGAR DE NUEVO";
   textSize(marco * 0.06);
-  let btnCharWidth = marco * 0.04;
-  let startBtnX = centerX - (btnText.length * btnCharWidth) / 2;
+  
+  let totalWidthBtn = textWidth(btnText);
+  let startXBtn = centerX - totalWidthBtn / 2;
+  let currentXBtn = startXBtn;
   
   for (let i = 0; i < btnText.length; i++) {
-    let charCol = (i + floor(t * 6)) % 2 == 0 ? color(255, 7, 78) : color(255);
+    let charCol = (i + floor(t * 6)) % 2 == 0 ? color(255) : color(0);
     fill(charCol);
-    text(btnText[i], startBtnX + i * btnCharWidth, btnY);
+    let charW = textWidth(btnText[i]);
+    text(btnText[i], currentXBtn + charW/2, btnY);
+    currentXBtn += charW;
   }
   
   pop();
@@ -605,10 +688,13 @@ function dibujarTutorial() {
     textAlign(CENTER, CENTER);
 
     let marco = min(width, height) * 0.8;
+    // Marco exterior NEGRO
     fill(0);
-    rect(centerX, centerY, marco + 40, marco + 40);
+    rect(centerX, centerY, marco + 60, marco + 60);
+    // Marco medio BLANCO
     fill(255);
-    rect(centerX, centerY, marco + 20, marco + 20);
+    rect(centerX, centerY, marco + 40, marco + 40);
+    // Marco interior COLOR (morado)
     fill(130, 117, 154);
     rect(centerX, centerY, marco, marco);
 
@@ -745,4 +831,76 @@ function dibujarVidas() {
         rect(x, y + p*2, p, p);
     }
     pop();
+}
+
+// Sistema de partículas
+class Particula {
+    constructor(_x, _y, _color, _isRed = false) {
+        this.pos = createVector(_x, _y);
+        this.vel = createVector(random(-8, 8), random(-8, 8));
+        this.life = 255;
+        this.lifespeed = random(1.5, 2.5); // Reducido para más vida
+        this.size = random(15, 25); // Aumentado el tamaño
+        this.color = _color;
+        this.isRed = _isRed;
+    }
+    
+    update() {
+        this.pos.add(this.vel);
+        this.vel.y += 0.3; // gravedad
+        this.life -= this.lifespeed;
+        this.size = map(this.life, 255, 0, this.isRed ? 25 : 22, 0); // Tamaño máximo aumentado
+    }
+    
+    display() {
+        push();
+        noStroke();
+        fill(red(this.color), green(this.color), blue(this.color), this.life);
+        rectMode(CENTER);
+        rect(this.pos.x, this.pos.y, this.size, this.size);
+        pop();
+    }
+    
+    isDead() {
+        return this.life <= 0;
+    }
+}
+
+function crearParticulasRojas(_x, _y, cantidad = 15) {
+    for (let i = 0; i < cantidad; i++) {
+        let c = color(255, random(0, 50), 0);
+        particulasRojas.push(new Particula(_x, _y, c, true));
+    }
+}
+
+function crearParticulasColores(_x, _y, cantidad = 20) {
+    for (let i = 0; i < cantidad; i++) {
+        let c = getPamiColor3(random(1));
+        particulasColores.push(new Particula(_x, _y, c, false));
+    }
+}
+
+function actualizarParticulas() {
+    for (let i = particulasRojas.length - 1; i >= 0; i--) {
+        particulasRojas[i].update();
+        if (particulasRojas[i].isDead()) {
+            particulasRojas.splice(i, 1);
+        }
+    }
+    
+    for (let i = particulasColores.length - 1; i >= 0; i--) {
+        particulasColores[i].update();
+        if (particulasColores[i].isDead()) {
+            particulasColores.splice(i, 1);
+        }
+    }
+}
+
+function dibujarParticulas() {
+    for (let p of particulasRojas) {
+        p.display();
+    }
+    for (let p of particulasColores) {
+        p.display();
+    }
 }

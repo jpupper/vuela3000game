@@ -40,9 +40,11 @@ class Pelus {
           if (p.type == 0) {
             puntomanager.puntos += 100;
             p.modopeluca = 1;
+            crearParticulasColores(p.pos.x, p.pos.y - p.h/2, 20);
           } else if (p.type == 1) {
             vidas--;
             p.modopeluca = 1;
+            crearParticulasRojas(_a.pos.x, _a.pos.y, 15);
             if(vidas <= 0){
               Perder();
             }
@@ -169,21 +171,27 @@ class Pelus {
         
     }
     imageMode(CORNER);
-
+    
+    // Modo DEBUG - dibujar cajas de colisión
+    if (debugmode) {
+        push();
+        noFill();
+        stroke(this.type == 0 ? color(0, 255, 0) : color(255, 0, 0));
+        strokeWeight(2);
+        rectMode(CENTER);
+        rect(this.pos.x, this.pos.y, this.w, this.h);
+        pop();
+    }
     }
 
     update() {
       this.speed.add(this.accel);
 
-
       this.pos.add(this.speed);
-
 
       let t = millis()*this.freq;
       let oscy = sin(t+this.oscya)*this.radio;
       this.pos.add(createVector(0,oscy));   
-      
-      
       
       if(this.modopeluca == 0){
         this.pospeluc.x = this.pos.x;
