@@ -170,7 +170,7 @@ class Tutorial {
         fill(255);
         textSize(marco * 0.045);
         text("PRESIONA", instrX, section3Y - marco * 0.04);
-        text("PARA VOLAR", instrX, section3Y + marco * 0.02);
+        text("PARA VOLAR", instrX, section3Y + marco * 0.02)
         
         pop();
     }

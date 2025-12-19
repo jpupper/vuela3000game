@@ -13,7 +13,9 @@ let vidas;
 
 let highscore;
 let tutorial;
-let winnerMessageShown = false;
+let lastComboScore = 0;
+let comboMessageTime = 0;
+let showComboMessage = false;
 
 let sh;
 let pg;
@@ -53,16 +55,24 @@ function preload(){
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  avion = new Avion();
+  pelus = new Pelus();
+  puntomanager = new Puntaje();
+  pantalla = 0;
+  mflag = true;
+  durgameover = 3000;
+  vidas = 3;
+  
+  highscore = new Highscore();
+  tutorial = new Tutorial();
+
+  pg = createGraphics(windowWidth, windowHeight, WEBGL);
+  pg.translate(-windowWidth/2,-windowHeight/2)
   rectMode(CENTER);
   noStroke();
   textSize(40);
   textAlign(CENTER);
   document.getElementById("loading").style.display = "none"
-  mflag = true;
-  
- 
-  pg = createGraphics(windowWidth ,windowHeight,WEBGL);
-  pg.translate(-windowWidth/2,-windowHeight/2)
   
   restart();
 
@@ -98,7 +108,8 @@ function restart() {
   ltgameover = millis();
   puntomanager.puntos = 0;
   vidas = 3;
-  winnerMessageShown = false;
+  lastComboScore = 0;
+  showComboMessage = false;
 }
 function Perder(){
   pantalla = 2;
@@ -129,6 +140,10 @@ function draw() {
   if (pantalla == 5) {
     dibujarFondo();
     highscore.update();
+    highscore.display();
+  }
+  if (pantalla == 6) {
+    dibujarFondo();
     highscore.display();
   }
   /*background(0);
@@ -172,13 +187,25 @@ function handleButtonPress() {
     pantalla = 4;
     tutorial.start();
   }
-  if(pantalla == 2 || pantalla == 3){
+  if(pantalla == 2){
+    if(highscore.checkIfInTop10(puntomanager.puntos)) {
+      pantalla = 5;
+      highscore.startNameEntry(puntomanager.puntos);
+    } else {
+      pantalla = 6;
+    }
+  }
+  if(pantalla == 3){
     restart();
   }
   if(pantalla == 5){
     highscore.confirmLetter();
   }
+  if(pantalla == 6){
+    restart();
+  }
 }
+
 
 function handlePreviousButton() {
   if(pantalla == 1){
@@ -188,11 +215,22 @@ function handlePreviousButton() {
     pantalla = 4;
     tutorial.start();
   }
-  if(pantalla == 2 || pantalla == 3){
+  if(pantalla == 2){
+    if(highscore.checkIfInTop10(puntomanager.puntos)) {
+      pantalla = 5;
+      highscore.startNameEntry(puntomanager.puntos);
+    } else {
+      pantalla = 6;
+    }
+  }
+  if(pantalla == 3){
     restart();
   }
   if(pantalla == 5){
     highscore.previousLetterInput();
+  }
+  if(pantalla == 6){
+    restart();
   }
 }
 
@@ -240,6 +278,7 @@ function dibujarJuego() {
 
   avion.update();
   pelus.update();
+  
   avion.display();
   pelus.display();
 
@@ -249,25 +288,37 @@ function dibujarJuego() {
   dibujarParticulas();
   
   dibujarVidas();
-
-  if(puntomanager.puntos >= 3000 && !winnerMessageShown){
-    winnerMessageShown = true;
-    mostrarMensajeGanador();
+  
+  // CAMBIAR AQUI EL VALOR 3000 PARA MODIFICAR CADA CUANTOS PUNTOS SALE EL COMBO
+  let currentCombo = floor(puntomanager.puntos / 3000);
+  if(currentCombo > lastComboScore && puntomanager.puntos >= 3000) {
+    lastComboScore = currentCombo;
+    vidas = min(vidas + 1, 5);
+    showComboMessage = true;
+    comboMessageTime = millis();
   }
   
-  if(winnerMessageShown) {
+  if(showComboMessage && millis() - comboMessageTime < 2000) {
     push();
     textFont(pixelFont);
     textAlign(CENTER, CENTER);
     let t = millis() * 0.003;
-    let pulse = 1 + sin(t * 5) * 0.1;
-    textSize(60 * pulse);
-    for(let i = 0; i < "GANADOR!".length; i++) {
-      let charCol = (i + floor(t * 4)) % 2 == 0 ? color(254, 235, 44) : color(255, 161, 8);
+    let pulse = 1 + sin(t * 8) * 0.15;
+    textSize(70 * pulse);
+    
+    let comboText = "COMBO " + (lastComboScore * 3000);
+    for(let i = 0; i < comboText.length; i++) {
+      let charCol = (i + floor(t * 6)) % 2 == 0 ? color(254, 235, 44) : color(255, 161, 8);
       fill(charCol);
-      text("GANADOR!"[i], width/2 - 180 + i * 60, height/2 - 150);
+      text(comboText[i], width/2 - (comboText.length * 20) + i * 40, height/2 - 100);
     }
+    
+    textSize(40);
+    fill(255);
+    text("+1 VIDA", width/2, height/2 - 30);
     pop();
+  } else if(millis() - comboMessageTime >= 2000) {
+    showComboMessage = false;
   }
 }
 
@@ -291,15 +342,13 @@ function dibujarGameOver() {
   image(seqAnifinal.getActiveImg(), width/2, height/2, size, size);
   imageMode(CORNER);
   
-  if(highscore.checkIfInTop10(puntomanager.puntos)) {
-    push();
-    textFont(pixelFont);
-    textAlign(CENTER, CENTER);
-    fill(255);
-    textSize(40);
-    text("PRESIONA PARA CONTINUAR", width/2, height - 100);
-    pop();
-  }
+  push();
+  textFont(pixelFont);
+  textAlign(CENTER, CENTER);
+  fill(255);
+  textSize(40);
+  text("PRESIONA PARA CONTINUAR", width/2, height - 100);
+  pop();
 }
 
 function dibujarVictoria() {
