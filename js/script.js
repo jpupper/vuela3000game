@@ -17,6 +17,8 @@ let pg;
 
 let seqStart ;
 let pixelFont;
+let seqAnifinal;
+let seqWin;
 
 let imgsPelus =[];
 let imgsPjs =[];
@@ -31,6 +33,8 @@ function preload(){
   pixelFont = loadFont("font/pixelart.ttf");
   sh = loadShader("shaders/base.vert","shaders/randombackground.frag");
   seqStart = new pngSequence("img/anistart",3,0);
+  seqAnifinal = new pngSequence("img/anifinal",5,0);
+  seqWin = new pngSequence("img/win",8,0);
   for(let i=0;i<10;i++){
     imgsPjs[i] = loadImage("img/personajes/"+i+".PNG");
   }
@@ -228,359 +232,58 @@ function dibujarJuego() {
 function dibujarGameOver() {
   dibujarFondo();
   
-  let t = millis() * 0.001;
-  let centerX = width / 2;
-  let centerY = height / 2;
+  // Actualizar y mostrar la secuencia de animación de PERDISTE
+  seqAnifinal.update();
+  seqAnifinal.speed = 0.1;
   
-  push();
-  rectMode(CENTER);
-  textAlign(CENTER, CENTER);
-  
-  let marco = min(width, height) * 0.8;
-  // Marco exterior NEGRO
-  fill(0);
-  rect(centerX, centerY, marco + 60, marco + 60);
-  // Marco medio BLANCO
-  fill(255);
-  rect(centerX, centerY, marco + 40, marco + 40);
-  // Marco interior COLOR (morado)
-  fill(130, 117, 154);
-  rect(centerX, centerY, marco, marco);
-  
-  // Formas geométricas variadas en diferentes vértices
-  let colorIndex = floor(t * 2) % 5;
-  let colores = [
-    color(254, 235, 44),
-    color(255, 161, 8),
-    color(255, 7, 78),
-    color(44, 171, 254),
-    color(130, 117, 154)
-  ];
-  
-  let boxSize = marco * 0.08;
-  
-  // Esquina superior izquierda - cuadrados rotados
-  for (let i = 0; i < 3; i++) {
-    push();
-    translate(centerX - marco * 0.35 + i * boxSize * 1.5, centerY - marco * 0.4);
-    rotate(t + i * 0.5);
-    fill(colores[(i + colorIndex) % 5]);
-    rect(0, 0, boxSize, boxSize);
-    pop();
+  // Dibujar la imagen centrada a la mitad del tamaño
+  imageMode(CENTER);
+  let size;
+  if(windowWidth > windowHeight){
+    size = windowHeight ;
+  }else{
+    size = windowWidth ;
   }
   
-  // Esquina superior derecha - triángulos
-  for (let i = 0; i < 3; i++) {
-    let x = centerX + marco * 0.25 + i * boxSize * 1.2;
-    let y = centerY - marco * 0.4;
-    fill(colores[(i + colorIndex + 2) % 5]);
-    triangle(x, y - boxSize/2, x - boxSize/2, y + boxSize/2, x + boxSize/2, y + boxSize/2);
-  }
+  image(seqAnifinal.getActiveImg(), width/2, height/2, size, size);
+  imageMode(CORNER);
   
-  // Esquina inferior izquierda - círculos pixelados
-  for (let i = 0; i < 3; i++) {
-    let x = centerX - marco * 0.35 + i * boxSize * 1.5;
-    let y = centerY + marco * 0.35;
-    fill(colores[(i + colorIndex + 3) % 5]);
-    let p = boxSize / 4;
-    rect(x - p, y - p, p, p);
-    rect(x, y - p, p, p);
-    rect(x + p, y - p, p, p);
-    rect(x - p, y, p, p);
-    rect(x + p, y, p, p);
-    rect(x - p, y + p, p, p);
-    rect(x, y + p, p, p);
-    rect(x + p, y + p, p, p);
-  }
-  
-  // Esquina inferior derecha - rectángulos verticales
-  for (let i = 0; i < 3; i++) {
-    let x = centerX + marco * 0.25 + i * boxSize * 1.2;
-    let y = centerY + marco * 0.35;
-    fill(colores[(i + colorIndex + 1) % 5]);
-    rect(x, y, boxSize * 0.6, boxSize * 1.5);
-  }
-  
-  // Título VUELAPELUCAS 3000
-  textFont(pixelFont);
-  textAlign(CENTER, CENTER);
-  textSize(marco * 0.045);
-  fill(254, 235, 44);
-  text("VUELAPELUCAS", centerX, centerY - marco * 0.45);
-  fill(255, 161, 8);
-  text("3000", centerX, centerY - marco * 0.38);
-  
-  // Contenedor para texto PERDISTE
-  let containerW = marco * 0.85;
-  let containerH = marco * 0.28;
-  let containerY = centerY - marco * 0.15;
-  
-  // Contenedor animado con colores
-  let containerColorIndex = floor(t * 2) % 5;
-  fill(colores[containerColorIndex]);
-  rect(centerX, containerY, containerW + 20, containerH + 20);
-  fill(255);
-  rect(centerX, containerY, containerW + 10, containerH + 10);
-  fill(0);
-  rect(centerX, containerY, containerW, containerH);
-  
-  // Texto PERDISTE con letras alternando blanco/negro
-  textFont(pixelFont);
-  textAlign(CENTER, CENTER);
-  let palabra = "PERDISTE";
-  textSize(marco * 0.08);
-  
-  // Dibujar cada letra con color alternado
-  let totalWidth = textWidth(palabra);
-  let startX = centerX - totalWidth / 2;
-  let currentX = startX;
-  
-  for (let i = 0; i < palabra.length; i++) {
-    let charCol = (i + floor(t * 3)) % 2 == 0 ? color(255) : color(254, 235, 44);
-    fill(charCol);
-    let charW = textWidth(palabra[i]);
-    text(palabra[i], currentX + charW/2, containerY);
-    currentX += charW;
-  }
-  
-  // Mostrar solo el número del puntaje (sin la palabra PUNTOS)
-  textFont(pixelFont);
-  let puntajeStr = str(puntomanager.puntos);
-  textSize(marco * 0.06);
-  let puntajeCharWidth = marco * 0.07;
-  let startPuntajeX = centerX - (puntajeStr.length * puntajeCharWidth) / 2;
-  let puntajeY = centerY + marco * 0.05;
-  
-  for (let i = 0; i < puntajeStr.length; i++) {
-    let charCol = (i + floor(t * 4)) % 2 == 0 ? color(255, 161, 8) : color(254, 235, 44);
-    fill(charCol);
-    text(puntajeStr[i], startPuntajeX + i * puntajeCharWidth, puntajeY);
-  }
-
+  // Verificar si puede reiniciar después del tiempo de espera
   let elapsedTime = millis() - ltgameover;
   let waitTime = durgameover;
-
-  let boxY = centerY + marco * 0.25;
   
-  if (elapsedTime > waitTime) {
-    // Contenedor para REINICIAR
-    let btnW = marco * 0.5;
-    let btnH = marco * 0.15;
-    let btnColorIndex = floor(t * 3) % 5;
-    
-    fill(colores[btnColorIndex]);
-    rect(centerX, boxY, btnW + 20, btnH + 20);
-    fill(255);
-    rect(centerX, boxY, btnW + 10, btnH + 10);
-    fill(255, 7, 78);
-    rect(centerX, boxY, btnW, btnH);
-    
+  if (elapsedTime <= waitTime) {
+    // Mostrar mensaje de espera
+    push();
     textFont(pixelFont);
     textAlign(CENTER, CENTER);
-    let reiniciarText = "REINICIAR";
-    textSize(marco * 0.045);
-    
-    let totalWidthReiniciar = textWidth(reiniciarText);
-    let startXReiniciar = centerX - totalWidthReiniciar / 2;
-    let currentXReiniciar = startXReiniciar;
-    
-    for (let i = 0; i < reiniciarText.length; i++) {
-      let charCol = (i + floor(t * 5)) % 2 == 0 ? color(0) : color(255);
-      fill(charCol);
-      let charW = textWidth(reiniciarText[i]);
-      text(reiniciarText[i], currentXReiniciar + charW/2, boxY);
-      currentXReiniciar += charW;
-    }
-  } else {
-    fill(100);
-    textSize(marco * 0.06);
-    text("ESPERA " + ceil((waitTime - elapsedTime)/1000), centerX, boxY);
+    fill(255);
+    textSize(40);
+    text("ESPERA " + ceil((waitTime - elapsedTime)/1000), width/2, height - 100);
+    pop();
   }
-  
-  pop();
 }
 
 function dibujarVictoria() {
   dibujarFondo();
   
-  let t = millis() * 0.001;
-  let centerX = width / 2;
-  let centerY = height / 2;
+  // Actualizar y mostrar la secuencia de animación de GANASTE
+  seqWin.update();
+  seqWin.speed = 0.1;
   
-  push();
-  rectMode(CENTER);
-  textAlign(CENTER, CENTER);
-  
-  let marco = min(width, height) * 0.8;
-  // Marco exterior NEGRO
-  fill(0);
-  rect(centerX, centerY, marco + 60, marco + 60);
-  // Marco medio BLANCO
-  fill(255);
-  rect(centerX, centerY, marco + 40, marco + 40);
-  // Marco interior COLOR (morado)
-  fill(130, 117, 154);
-  rect(centerX, centerY, marco, marco);
-  
-  // Formas geométricas variadas en diferentes vértices
-  let colorIndex = floor(t * 3) % 5;
-  let colores = [
-    color(254, 235, 44),
-    color(255, 161, 8),
-    color(255, 7, 78),
-    color(44, 171, 254),
-    color(0, 255, 100)
-  ];
-  
-  let boxSize = marco * 0.08;
-  
-  // Esquina superior izquierda - estrellas pixeladas
-  for (let i = 0; i < 3; i++) {
-    let x = centerX - marco * 0.35 + i * boxSize * 1.5;
-    let y = centerY - marco * 0.4;
-    fill(colores[(i + colorIndex) % 5]);
-    let p = boxSize / 5;
-    rect(x, y - p*2, p, p);
-    rect(x - p, y - p, p, p);
-    rect(x, y - p, p, p);
-    rect(x + p, y - p, p, p);
-    rect(x - p*2, y, p, p);
-    rect(x - p, y, p, p);
-    rect(x, y, p, p);
-    rect(x + p, y, p, p);
-    rect(x + p*2, y, p, p);
-    rect(x - p, y + p, p, p);
-    rect(x, y + p, p, p);
-    rect(x + p, y + p, p, p);
-    rect(x, y + p*2, p, p);
+  // Dibujar la imagen centrada a la mitad del tamaño
+  imageMode(CENTER);
+  let size;
+  if(windowWidth > windowHeight){
+    size = windowHeight / 2;
+  }else{
+    size = windowWidth / 2;
   }
   
-  // Esquina superior derecha - diamantes
-  for (let i = 0; i < 3; i++) {
-    let x = centerX + marco * 0.25 + i * boxSize * 1.2;
-    let y = centerY - marco * 0.4;
-    fill(colores[(i + colorIndex + 2) % 5]);
-    let p = boxSize / 4;
-    rect(x, y - p*2, p, p);
-    rect(x - p, y - p, p, p);
-    rect(x, y - p, p, p);
-    rect(x + p, y - p, p, p);
-    rect(x - p*2, y, p, p);
-    rect(x + p*2, y, p, p);
-    rect(x - p, y + p, p, p);
-    rect(x, y + p, p, p);
-    rect(x + p, y + p, p, p);
-    rect(x, y + p*2, p, p);
-  }
+  image(seqWin.getActiveImg(), width/2, height/2, size, size);
+  imageMode(CORNER);
   
-  // Esquina inferior izquierda - cuadrados con rotación
-  for (let i = 0; i < 3; i++) {
-    push();
-    translate(centerX - marco * 0.35 + i * boxSize * 1.5, centerY + marco * 0.35);
-    rotate(t * 2 + i * 0.7);
-    fill(colores[(i + colorIndex + 3) % 5]);
-    rect(0, 0, boxSize, boxSize);
-    pop();
-  }
-  
-  // Esquina inferior derecha - triángulos invertidos
-  for (let i = 0; i < 3; i++) {
-    let x = centerX + marco * 0.25 + i * boxSize * 1.2;
-    let y = centerY + marco * 0.35;
-    fill(colores[(i + colorIndex + 1) % 5]);
-    triangle(x, y + boxSize/2, x - boxSize/2, y - boxSize/2, x + boxSize/2, y - boxSize/2);
-  }
-  
-  // Título VUELAPELUCAS 3000
-  textFont(pixelFont);
-  textAlign(CENTER, CENTER);
-  textSize(marco * 0.045);
-  fill(44, 171, 254);
-  text("VUELAPELUCAS", centerX, centerY - marco * 0.45);
-  fill(0, 255, 100);
-  text("3000", centerX, centerY - marco * 0.38);
-  
-  // Contenedor para texto GANASTE
-  let containerW = marco * 0.7;
-  let containerH = marco * 0.2;
-  let containerY = centerY - marco * 0.15;
-  
-  // Contenedor animado con colores
-  let containerColorIndex = floor(t * 3) % 5;
-  fill(colores[containerColorIndex]);
-  rect(centerX, containerY, containerW + 20, containerH + 20);
-  fill(255);
-  rect(centerX, containerY, containerW + 10, containerH + 10);
-  fill(0);
-  rect(centerX, containerY, containerW, containerH);
-  
-  // Texto GANASTE con letras alternando colores
-  textFont(pixelFont);
-  textAlign(CENTER, CENTER);
-  let palabra = "GANASTE";
-  textSize(marco * 0.08);
-  
-  let totalWidthGanaste = textWidth(palabra);
-  let startXGanaste = centerX - totalWidthGanaste / 2;
-  let currentXGanaste = startXGanaste;
-  
-  for (let i = 0; i < palabra.length; i++) {
-    let charCol = (i + floor(t * 4)) % 2 == 0 ? color(254, 235, 44) : color(255, 161, 8);
-    fill(charCol);
-    let charW = textWidth(palabra[i]);
-    text(palabra[i], currentXGanaste + charW/2, containerY);
-    currentXGanaste += charW;
-  }
-  
-  // Mostrar solo el número 3000 con animación
-  textFont(pixelFont);
-  let puntajeStr = "3000";
-  textSize(marco * 0.06);
-  let puntajeCharWidth = marco * 0.07;
-  let startPuntajeX = centerX - (puntajeStr.length * puntajeCharWidth) / 2;
-  let puntajeY = centerY + marco * 0.05;
-  
-  for (let i = 0; i < puntajeStr.length; i++) {
-    let charCol = (i + floor(t * 5)) % 2 == 0 ? color(44, 171, 254) : color(0, 255, 100);
-    fill(charCol);
-    text(puntajeStr[i], startPuntajeX + i * puntajeCharWidth, puntajeY);
-  }
-  
-  // Contenedor para botón JUGAR DE NUEVO
-  let btnY = centerY + marco * 0.25;
-  let btnW = marco * 0.65;
-  let btnH = marco * 0.15;
-  let btnColorIndex = floor(t * 4) % 5;
-  
-  fill(colores[btnColorIndex]);
-  rect(centerX, btnY, btnW + 20, btnH + 20);
-  fill(255);
-  rect(centerX, btnY, btnW + 10, btnH + 10);
-  fill(0, 255, 100);
-  rect(centerX, btnY, btnW, btnH);
-  
-  textFont(pixelFont);
-  fill(255);
-  textSize(marco * 0.04);
-  text("JUGAR DE NUEVO", centerX, btnY);
-  
-  let btnText = "JUGAR DE NUEVO";
-  textSize(marco * 0.06);
-  
-  let totalWidthBtn = textWidth(btnText);
-  let startXBtn = centerX - totalWidthBtn / 2;
-  let currentXBtn = startXBtn;
-  
-  for (let i = 0; i < btnText.length; i++) {
-    let charCol = (i + floor(t * 6)) % 2 == 0 ? color(255) : color(0);
-    fill(charCol);
-    let charW = textWidth(btnText[i]);
-    text(btnText[i], currentXBtn + charW/2, btnY);
-    currentXBtn += charW;
-  }
-  
-  pop();
-
+  // Auto-reiniciar después de un tiempo
   if(millis() - ltgameover > durgameover * 3){
     restart();
   }
@@ -780,12 +483,13 @@ function dibujarTutorial() {
         // Dibujar peluca volando hacia arriba con animación
         let pelucaW = imgsPelus[0].width * charScale;
         let pelucaH = imgsPelus[0].height * charScale;
-        // Animación: la peluca sube y se desvanece
+        // Animación: la peluca sube y se desvanece, spawneando desde la cabeza
         let pelucaOffset = (t * 50) % 150; // Sube 150 píxeles y se reinicia
         let pelucaAlpha = map(pelucaOffset, 0, 150, 255, 0); // Se desvanece mientras sube
+        let pelucaStartY = charY - charH/2; // Spawn en la cabeza del personaje
         push();
         tint(255, pelucaAlpha);
-        image(imgsPelus[0], rightX, charY - charH/2 - pelucaOffset, pelucaW, pelucaH);
+        image(imgsPelus[0], rightX, pelucaStartY - pelucaOffset, pelucaW, pelucaH);
         pop();
         imageMode(CORNER);
     }
@@ -838,8 +542,9 @@ function dibujarTutorial() {
         push();
         translate(planeX, planeY);
         
-        // Dibujar nave simplificada usando el método display2 del avión
+        // Dibujar nave simplificada con seed fijo para evitar cambio de colores
         let tempAvion = new Avion();
+        tempAvion.seed = 1234; // Seed fijo para colores consistentes
         tempAvion.display2(0, 0);
         
         pop();
