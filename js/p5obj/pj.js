@@ -41,8 +41,11 @@ class Pelus {
             puntomanager.puntos += 100;
             p.modopeluca = 1;
           } else if (p.type == 1) {
-            puntomanager.puntos -= 100;
-            Perder();
+            vidas--;
+            p.modopeluca = 1;
+            if(vidas <= 0){
+              Perder();
+            }
           }
           //this.pls.splice(i, 1);
         }

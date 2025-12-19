@@ -7,6 +7,9 @@ let mflag;
 
 let ltgameover;
 let durgameover;
+let lttutorial;
+let durtutorial = 3000;
+let vidas;
 
 let sh;
 let pg;
@@ -77,9 +80,10 @@ function restart() {
   avion = new Avion();
   puntos = 0;
   pelus = new Pelus();
-  durgameover = 1000;
+  durgameover = 3000; // 3 segundos obligatorio
   ltgameover = millis();
   puntomanager.puntos = 0;
+  vidas = 3;
 }
 function Perder(){
   pantalla = 2;
@@ -104,6 +108,9 @@ function draw() {
   if (pantalla == 3) {
     dibujarVictoria();
   }
+  if (pantalla == 4) {
+    dibujarTutorial();
+  }
   /*background(0);
   fill(255,0,0);
   ellipse(mouseX,mouseY,80,80);*/
@@ -125,13 +132,41 @@ function keyPressed(){
         avion.jump();
       }
       if(pantalla == 0){
-        pantalla = 1;
+        pantalla = 4; // Ir a tutorial
+        lttutorial = millis();
       }
       if(pantalla == 2 || pantalla == 3){
-        restart();
+        if (millis() - ltgameover > durgameover) {
+            restart();
+        }
       }
     }
 }
+
+function mousePressed() {
+  if (pantalla == 0) {
+    pantalla = 4; // Ir a tutorial
+    lttutorial = millis();
+  }
+  if (pantalla == 2 || pantalla == 3) {
+    if (millis() - ltgameover > durgameover) {
+        restart();
+    }
+  }
+}
+
+function touchPressed(){
+  if (pantalla == 0) {
+    pantalla = 4; // Ir a tutorial
+    lttutorial = millis();
+  }
+  if (pantalla == 2 || pantalla == 3) {
+    if (millis() - ltgameover > durgameover) {
+        restart();
+    }
+  }
+}
+
 function dibujarFondo() {
   //fill(0, 120);
   //rect(width / 2, height / 2, width, height);
@@ -176,6 +211,8 @@ function dibujarJuego() {
 
   pelus.collide(avion);
   
+  dibujarVidas();
+
   if(puntomanager.puntos >= 3000){
     Ganar();
   }
@@ -200,6 +237,7 @@ function dibujarGameOver() {
   fill(130, 117, 154);
   rect(centerX, centerY, marco, marco);
   
+  // Formas geométricas variadas en diferentes vértices
   let colorIndex = floor(t * 2) % 5;
   let colores = [
     color(254, 235, 44),
@@ -209,41 +247,98 @@ function dibujarGameOver() {
     color(130, 117, 154)
   ];
   
-  let boxSize = marco * 0.15;
-  let spacing = boxSize * 1.3;
-  let startX = centerX - spacing * 2;
-  let topY = centerY - marco * 0.35;
+  let boxSize = marco * 0.08;
   
-  for (let i = 0; i < 5; i++) {
-    let col = colores[(i + colorIndex) % 5];
-    fill(0);
-    rect(startX + i * spacing, topY, boxSize + 10, boxSize + 10);
-    fill(col);
-    rect(startX + i * spacing, topY, boxSize, boxSize);
+  // Esquina superior izquierda - cuadrados rotados
+  for (let i = 0; i < 3; i++) {
+    push();
+    translate(centerX - marco * 0.35 + i * boxSize * 1.5, centerY - marco * 0.4);
+    rotate(t + i * 0.5);
+    fill(colores[(i + colorIndex) % 5]);
+    rect(0, 0, boxSize, boxSize);
+    pop();
   }
   
+  // Esquina superior derecha - triángulos
+  for (let i = 0; i < 3; i++) {
+    let x = centerX + marco * 0.25 + i * boxSize * 1.2;
+    let y = centerY - marco * 0.4;
+    fill(colores[(i + colorIndex + 2) % 5]);
+    triangle(x, y - boxSize/2, x - boxSize/2, y + boxSize/2, x + boxSize/2, y + boxSize/2);
+  }
+  
+  // Esquina inferior izquierda - círculos pixelados
+  for (let i = 0; i < 3; i++) {
+    let x = centerX - marco * 0.35 + i * boxSize * 1.5;
+    let y = centerY + marco * 0.35;
+    fill(colores[(i + colorIndex + 3) % 5]);
+    let p = boxSize / 4;
+    rect(x - p, y - p, p, p);
+    rect(x, y - p, p, p);
+    rect(x + p, y - p, p, p);
+    rect(x - p, y, p, p);
+    rect(x + p, y, p, p);
+    rect(x - p, y + p, p, p);
+    rect(x, y + p, p, p);
+    rect(x + p, y + p, p, p);
+  }
+  
+  // Esquina inferior derecha - rectángulos verticales
+  for (let i = 0; i < 3; i++) {
+    let x = centerX + marco * 0.25 + i * boxSize * 1.2;
+    let y = centerY + marco * 0.35;
+    fill(colores[(i + colorIndex + 1) % 5]);
+    rect(x, y, boxSize * 0.6, boxSize * 1.5);
+  }
+  
+  // Texto PERDISTE con letras alternando blanco/negro
+  let palabra = "PERDISTE";
+  textSize(marco * 0.14);
+  let charWidth = marco * 0.08;
+  let startTextX = centerX - (palabra.length * charWidth) / 2;
+  
+  for (let i = 0; i < palabra.length; i++) {
+    let charCol = (i + floor(t * 3)) % 2 == 0 ? color(0) : color(255);
+    fill(charCol);
+    text(palabra[i], startTextX + i * charWidth, centerY - marco * 0.15);
+  }
+  
+  // Mostrar solo el número del puntaje (sin la palabra PUNTOS)
+  let puntajeStr = str(puntomanager.puntos);
   textSize(marco * 0.12);
-  let textCol = floor(t * 3) % 2 == 0 ? color(0) : color(255);
-  fill(textCol);
-  text("PERDISTE", centerX, centerY - marco * 0.1);
+  let puntajeCharWidth = marco * 0.07;
+  let startPuntajeX = centerX - (puntajeStr.length * puntajeCharWidth) / 2;
+  let puntajeY = centerY + marco * 0.05;
   
-  let boxW = marco * 0.5;
-  let boxH = marco * 0.2;
-  let boxY = centerY + marco * 0.15;
+  for (let i = 0; i < puntajeStr.length; i++) {
+    let charCol = (i + floor(t * 4)) % 2 == 0 ? color(255, 161, 8) : color(254, 235, 44);
+    fill(charCol);
+    text(puntajeStr[i], startPuntajeX + i * puntajeCharWidth, puntajeY);
+  }
+
+  let elapsedTime = millis() - ltgameover;
+  let waitTime = durgameover;
+
+  let boxY = centerY + marco * 0.25;
   
-  fill(getPamiColor(noise(t * 0.5 + 123)));
-  rect(centerX, boxY, boxW + 20, boxH + 20);
-  fill(255, 7, 78);
-  rect(centerX, boxY, boxW, boxH);
-  fill(0);
-  textSize(marco * 0.08);
-  text("REINICIAR", centerX, boxY);
+  if (elapsedTime > waitTime) {
+    let reiniciarText = "REINICIAR";
+    textSize(marco * 0.08);
+    let reiniciarCharWidth = marco * 0.05;
+    let startReiniciarX = centerX - (reiniciarText.length * reiniciarCharWidth) / 2;
+    
+    for (let i = 0; i < reiniciarText.length; i++) {
+      let charCol = (i + floor(t * 5)) % 2 == 0 ? color(255, 7, 78) : color(255);
+      fill(charCol);
+      text(reiniciarText[i], startReiniciarX + i * reiniciarCharWidth, boxY);
+    }
+  } else {
+    fill(100);
+    textSize(marco * 0.06);
+    text("ESPERA " + ceil((waitTime - elapsedTime)/1000), centerX, boxY);
+  }
   
   pop();
-
-  if(millis() - ltgameover > durgameover){
-    restart();
-  }
 }
 
 function dibujarVictoria() {
@@ -265,6 +360,7 @@ function dibujarVictoria() {
   fill(130, 117, 154);
   rect(centerX, centerY, marco, marco);
   
+  // Formas geométricas variadas en diferentes vértices
   let colorIndex = floor(t * 3) % 5;
   let colores = [
     color(254, 235, 44),
@@ -274,67 +370,101 @@ function dibujarVictoria() {
     color(0, 255, 100)
   ];
   
-  let boxSize = marco * 0.15;
-  let spacing = boxSize * 1.3;
-  let startX = centerX - spacing * 2;
-  let topY = centerY - marco * 0.35;
+  let boxSize = marco * 0.08;
   
-  for (let i = 0; i < 5; i++) {
-    let col = colores[(i + colorIndex) % 5];
-    fill(0);
-    rect(startX + i * spacing, topY, boxSize + 10, boxSize + 10);
-    fill(col);
-    rect(startX + i * spacing, topY, boxSize, boxSize);
+  // Esquina superior izquierda - estrellas pixeladas
+  for (let i = 0; i < 3; i++) {
+    let x = centerX - marco * 0.35 + i * boxSize * 1.5;
+    let y = centerY - marco * 0.4;
+    fill(colores[(i + colorIndex) % 5]);
+    let p = boxSize / 5;
+    rect(x, y - p*2, p, p);
+    rect(x - p, y - p, p, p);
+    rect(x, y - p, p, p);
+    rect(x + p, y - p, p, p);
+    rect(x - p*2, y, p, p);
+    rect(x - p, y, p, p);
+    rect(x, y, p, p);
+    rect(x + p, y, p, p);
+    rect(x + p*2, y, p, p);
+    rect(x - p, y + p, p, p);
+    rect(x, y + p, p, p);
+    rect(x + p, y + p, p, p);
+    rect(x, y + p*2, p, p);
   }
   
+  // Esquina superior derecha - diamantes
+  for (let i = 0; i < 3; i++) {
+    let x = centerX + marco * 0.25 + i * boxSize * 1.2;
+    let y = centerY - marco * 0.4;
+    fill(colores[(i + colorIndex + 2) % 5]);
+    let p = boxSize / 4;
+    rect(x, y - p*2, p, p);
+    rect(x - p, y - p, p, p);
+    rect(x, y - p, p, p);
+    rect(x + p, y - p, p, p);
+    rect(x - p*2, y, p, p);
+    rect(x + p*2, y, p, p);
+    rect(x - p, y + p, p, p);
+    rect(x, y + p, p, p);
+    rect(x + p, y + p, p, p);
+    rect(x, y + p*2, p, p);
+  }
+  
+  // Esquina inferior izquierda - cuadrados con rotación
+  for (let i = 0; i < 3; i++) {
+    push();
+    translate(centerX - marco * 0.35 + i * boxSize * 1.5, centerY + marco * 0.35);
+    rotate(t * 2 + i * 0.7);
+    fill(colores[(i + colorIndex + 3) % 5]);
+    rect(0, 0, boxSize, boxSize);
+    pop();
+  }
+  
+  // Esquina inferior derecha - triángulos invertidos
+  for (let i = 0; i < 3; i++) {
+    let x = centerX + marco * 0.25 + i * boxSize * 1.2;
+    let y = centerY + marco * 0.35;
+    fill(colores[(i + colorIndex + 1) % 5]);
+    triangle(x, y + boxSize/2, x - boxSize/2, y - boxSize/2, x + boxSize/2, y - boxSize/2);
+  }
+  
+  // Texto GANASTE con letras alternando colores
+  let palabra = "GANASTE";
+  textSize(marco * 0.14);
+  let charWidth = marco * 0.08;
+  let startTextX = centerX - (palabra.length * charWidth) / 2;
+  
+  for (let i = 0; i < palabra.length; i++) {
+    let charCol = (i + floor(t * 4)) % 2 == 0 ? color(254, 235, 44) : color(255, 161, 8);
+    fill(charCol);
+    text(palabra[i], startTextX + i * charWidth, centerY - marco * 0.15);
+  }
+  
+  // Mostrar solo el número 3000 con animación
+  let puntajeStr = "3000";
   textSize(marco * 0.12);
-  let textCol = floor(t * 4) % 2 == 0 ? color(254, 235, 44) : color(255, 161, 8);
-  fill(textCol);
-  text("¡GANASTE!", centerX, centerY - marco * 0.1);
+  let puntajeCharWidth = marco * 0.07;
+  let startPuntajeX = centerX - (puntajeStr.length * puntajeCharWidth) / 2;
+  let puntajeY = centerY + marco * 0.05;
   
-  let avionSize = marco * 0.15;
-  let avionX = centerX - marco * 0.25;
-  let avionY = centerY + sin(t * 3) * 20;
+  for (let i = 0; i < puntajeStr.length; i++) {
+    let charCol = (i + floor(t * 5)) % 2 == 0 ? color(44, 171, 254) : color(0, 255, 100);
+    fill(charCol);
+    text(puntajeStr[i], startPuntajeX + i * puntajeCharWidth, puntajeY);
+  }
   
-  push();
-  translate(avionX, avionY);
-  fill(getPamiColor2(noise(t * 2)));
-  rect(0, 0, avionSize, avionSize * 0.5);
-  fill(255);
-  triangle(avionSize/2, -avionSize/4, avionSize/2, avionSize/4, avionSize, 0);
-  pop();
+  // Botón JUGAR DE NUEVO
+  let btnY = centerY + marco * 0.25;
+  let btnText = "JUGAR DE NUEVO";
+  textSize(marco * 0.06);
+  let btnCharWidth = marco * 0.04;
+  let startBtnX = centerX - (btnText.length * btnCharWidth) / 2;
   
-  let boxW = marco * 0.4;
-  let boxH = marco * 0.18;
-  let boxX = centerX + marco * 0.15;
-  let boxY = centerY + marco * 0.05;
-  
-  fill(getPamiColor(noise(t * 0.5)));
-  rect(boxX, boxY, boxW + 20, boxH + 20);
-  fill(44, 171, 254);
-  rect(boxX, boxY, boxW, boxH);
-  fill(254, 235, 44);
-  textSize(marco * 0.1);
-  text("3000", boxX, boxY);
-  
-  let btnY = centerY + marco * 0.3;
-  fill(255, 118, 166);
-  rect(centerX, btnY, boxW + 20, boxH + 20);
-  fill(255);
-  rect(centerX, btnY, boxW, boxH);
-  fill(255, 7, 78);
-  textSize(marco * 0.07);
-  text("JUGAR DE NUEVO", centerX, btnY);
-  
-  let stars = 8;
-  for(let i = 0; i < stars; i++){
-    let angle = (t * 2 + i * TWO_PI / stars);
-    let radius = marco * 0.35;
-    let sx = centerX + cos(angle) * radius;
-    let sy = centerY + sin(angle) * radius;
-    let starSize = 15 + sin(t * 5 + i) * 5;
-    fill(colores[i % 5]);
-    rect(sx, sy, starSize, starSize);
+  for (let i = 0; i < btnText.length; i++) {
+    let charCol = (i + floor(t * 6)) % 2 == 0 ? color(255, 7, 78) : color(255);
+    fill(charCol);
+    text(btnText[i], startBtnX + i * btnCharWidth, btnY);
   }
   
   pop();
@@ -453,4 +583,166 @@ function getPamiColor3(valor) {
   var colorInterpolado = lerpColor(color1, color2, factor);
 
   return colorInterpolado;
+}
+
+function dibujarTutorial() {
+    dibujarFondo();
+    
+    let t = millis() * 0.001;
+    let centerX = width / 2;
+    let centerY = height / 2;
+    
+    let elapsedTime = millis() - lttutorial;
+    let remainingTime = ceil((durtutorial - elapsedTime) / 1000);
+    
+    if (elapsedTime > durtutorial) {
+        pantalla = 1;
+        return;
+    }
+
+    push();
+    rectMode(CENTER);
+    textAlign(CENTER, CENTER);
+
+    let marco = min(width, height) * 0.8;
+    fill(0);
+    rect(centerX, centerY, marco + 40, marco + 40);
+    fill(255);
+    rect(centerX, centerY, marco + 20, marco + 20);
+    fill(130, 117, 154);
+    rect(centerX, centerY, marco, marco);
+
+    // Contador en la parte superior
+    textSize(marco * 0.15);
+    let contadorStr = str(remainingTime);
+    for (let i = 0; i < contadorStr.length; i++) {
+        let charCol = (i + floor(t * 4)) % 2 == 0 ? color(254, 235, 44) : color(255, 161, 8);
+        fill(charCol);
+        text(contadorStr[i], centerX + (i - contadorStr.length/2 + 0.5) * marco * 0.1, centerY - marco * 0.38);
+    }
+
+    // Sección 1: PERSONAJE BUENO (arriba)
+    let section1Y = centerY - marco * 0.15;
+    
+    // Texto a la izquierda
+    textAlign(LEFT, CENTER);
+    let leftX = centerX - marco * 0.35;
+    
+    let texto1 = "PERSONAJE";
+    textSize(marco * 0.07);
+    let charWidth1 = marco * 0.045;
+    for (let i = 0; i < texto1.length; i++) {
+        let charCol = (i + floor(t * 3)) % 2 == 0 ? color(255) : color(254, 235, 44);
+        fill(charCol);
+        text(texto1[i], leftX + i * charWidth1, section1Y - marco * 0.05);
+    }
+    
+    let texto2 = "BUENO";
+    for (let i = 0; i < texto2.length; i++) {
+        let charCol = (i + floor(t * 3)) % 2 == 0 ? color(255) : color(254, 235, 44);
+        fill(charCol);
+        text(texto2[i], leftX + i * charWidth1, section1Y + marco * 0.02);
+    }
+    
+    fill(255);
+    textSize(marco * 0.045);
+    text("(SACARLE", leftX, section1Y + marco * 0.08);
+    text("LA PELUCA)", leftX, section1Y + marco * 0.12);
+    
+    // PNG a la derecha - Personaje con peluca (tipo 0)
+    if (imgsPjs && imgsPjs.length > 0 && imgsPelus && imgsPelus.length > 0) {
+        let rightX = centerX + marco * 0.15;
+        let charY = section1Y + sin(t * 4) * 5;
+        
+        let charScale = 0.25;
+        let charW = imgsPjs[0].width * charScale;
+        let charH = imgsPjs[0].height * charScale;
+        
+        imageMode(CENTER);
+        image(imgsPjs[0], rightX, charY, charW, charH);
+        
+        // Dibujar peluca encima
+        let pelucaW = imgsPelus[0].width * charScale;
+        let pelucaH = imgsPelus[0].height * charScale;
+        image(imgsPelus[0], rightX, charY - charH * 0.3, pelucaW, pelucaH);
+        imageMode(CORNER);
+    }
+    
+    // Sección 2: ESQUIVAR POLICIA (abajo)
+    let section2Y = centerY + marco * 0.15;
+    
+    textAlign(LEFT, CENTER);
+    
+    let texto3 = "ESQUIVAR";
+    textSize(marco * 0.07);
+    let charWidth2 = marco * 0.045;
+    for (let i = 0; i < texto3.length; i++) {
+        let charCol = (i + floor(t * 3.5)) % 2 == 0 ? color(255) : color(255, 7, 78);
+        fill(charCol);
+        text(texto3[i], leftX + i * charWidth2, section2Y - marco * 0.05);
+    }
+    
+    let texto4 = "POLICIA";
+    for (let i = 0; i < texto4.length; i++) {
+        let charCol = (i + floor(t * 3.5)) % 2 == 0 ? color(255) : color(255, 7, 78);
+        fill(charCol);
+        text(texto4[i], leftX + i * charWidth2, section2Y + marco * 0.02);
+    }
+    
+    // PNG a la derecha - Policía (seqRati)
+    if (seqRati) {
+        let rightX = centerX + marco * 0.15;
+        let ratiY = section2Y + sin(t * 5) * 5;
+        
+        let ratiScale = 0.25; 
+        let ratiW = seqRati.getW() * ratiScale;
+        let ratiH = seqRati.getH() * ratiScale;
+        
+        seqRati.update(); 
+        
+        imageMode(CENTER);
+        image(seqRati.getActiveImg(), rightX, ratiY, ratiW, ratiH);
+        imageMode(CORNER);
+    }
+
+    pop();
+}
+
+function dibujarVidas() {
+    let heartSize = 25;
+    let startX = 40;
+    let startY = 80; 
+    
+    push();
+    for (let i = 0; i < vidas; i++) {
+        let x = startX + i * (heartSize + 10);
+        let y = startY;
+        
+        noStroke();
+        fill(255, 0, 0); 
+        
+        let p = heartSize / 5;
+        
+        rect(x - p, y - p*2, p, p);
+        rect(x + p, y - p*2, p, p);
+        
+        rect(x - p*2, y - p, p, p);
+        rect(x - p, y - p, p, p);
+        rect(x, y - p, p, p);
+        rect(x + p, y - p, p, p);
+        rect(x + p*2, y - p, p, p);
+        
+        rect(x - p*2, y, p, p);
+        rect(x - p, y, p, p);
+        rect(x, y, p, p);
+        rect(x + p, y, p, p);
+        rect(x + p*2, y, p, p);
+
+        rect(x - p, y + p, p, p);
+        rect(x, y + p, p, p);
+        rect(x + p, y + p, p, p);
+        
+        rect(x, y + p*2, p, p);
+    }
+    pop();
 }

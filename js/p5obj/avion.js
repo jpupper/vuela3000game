@@ -55,9 +55,9 @@ class Avion {
       this.speed = createVector(0, 0);
       this.accel = createVector(0, 0);
       this.mflag = false;
-      this.speedlimit = 15;
-      this.gravityforce = 0.02;
-      this.jumpforce = .6;
+      this.speedlimit = 10;
+      this.gravityforce = 0.015;
+      this.jumpforce = .4;
       this.w = 100;
       this.h = 80;
       this.c1 = getPamiColor(0.0);
