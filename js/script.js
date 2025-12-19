@@ -16,6 +16,7 @@ let pg;
 
 
 let seqStart ;
+let pixelFont;
 
 let imgsPelus =[];
 let imgsPjs =[];
@@ -27,7 +28,8 @@ let particulasColores = [];
 let seqRati;
 
 function preload(){
-  sh = loadShader("shaders/base.vert","shaders/papel3.frag");
+  pixelFont = loadFont("font/pixelart.ttf");
+  sh = loadShader("shaders/base.vert","shaders/randombackground.frag");
   seqStart = new pngSequence("img/anistart",3,0);
   for(let i=0;i<10;i++){
     imgsPjs[i] = loadImage("img/personajes/"+i+".PNG");
@@ -299,9 +301,18 @@ function dibujarGameOver() {
     rect(x, y, boxSize * 0.6, boxSize * 1.5);
   }
   
+  // Título VUELAPELUCAS 3000
+  textFont(pixelFont);
+  textAlign(CENTER, CENTER);
+  textSize(marco * 0.045);
+  fill(254, 235, 44);
+  text("VUELAPELUCAS", centerX, centerY - marco * 0.45);
+  fill(255, 161, 8);
+  text("3000", centerX, centerY - marco * 0.38);
+  
   // Contenedor para texto PERDISTE
-  let containerW = marco * 0.7;
-  let containerH = marco * 0.2;
+  let containerW = marco * 0.85;
+  let containerH = marco * 0.28;
   let containerY = centerY - marco * 0.15;
   
   // Contenedor animado con colores
@@ -314,9 +325,10 @@ function dibujarGameOver() {
   rect(centerX, containerY, containerW, containerH);
   
   // Texto PERDISTE con letras alternando blanco/negro
+  textFont(pixelFont);
   textAlign(CENTER, CENTER);
   let palabra = "PERDISTE";
-  textSize(marco * 0.14);
+  textSize(marco * 0.08);
   
   // Dibujar cada letra con color alternado
   let totalWidth = textWidth(palabra);
@@ -332,8 +344,9 @@ function dibujarGameOver() {
   }
   
   // Mostrar solo el número del puntaje (sin la palabra PUNTOS)
+  textFont(pixelFont);
   let puntajeStr = str(puntomanager.puntos);
-  textSize(marco * 0.12);
+  textSize(marco * 0.06);
   let puntajeCharWidth = marco * 0.07;
   let startPuntajeX = centerX - (puntajeStr.length * puntajeCharWidth) / 2;
   let puntajeY = centerY + marco * 0.05;
@@ -362,9 +375,10 @@ function dibujarGameOver() {
     fill(255, 7, 78);
     rect(centerX, boxY, btnW, btnH);
     
+    textFont(pixelFont);
     textAlign(CENTER, CENTER);
     let reiniciarText = "REINICIAR";
-    textSize(marco * 0.08);
+    textSize(marco * 0.045);
     
     let totalWidthReiniciar = textWidth(reiniciarText);
     let startXReiniciar = centerX - totalWidthReiniciar / 2;
@@ -477,6 +491,15 @@ function dibujarVictoria() {
     triangle(x, y + boxSize/2, x - boxSize/2, y - boxSize/2, x + boxSize/2, y - boxSize/2);
   }
   
+  // Título VUELAPELUCAS 3000
+  textFont(pixelFont);
+  textAlign(CENTER, CENTER);
+  textSize(marco * 0.045);
+  fill(44, 171, 254);
+  text("VUELAPELUCAS", centerX, centerY - marco * 0.45);
+  fill(0, 255, 100);
+  text("3000", centerX, centerY - marco * 0.38);
+  
   // Contenedor para texto GANASTE
   let containerW = marco * 0.7;
   let containerH = marco * 0.2;
@@ -492,9 +515,10 @@ function dibujarVictoria() {
   rect(centerX, containerY, containerW, containerH);
   
   // Texto GANASTE con letras alternando colores
+  textFont(pixelFont);
   textAlign(CENTER, CENTER);
   let palabra = "GANASTE";
-  textSize(marco * 0.14);
+  textSize(marco * 0.08);
   
   let totalWidthGanaste = textWidth(palabra);
   let startXGanaste = centerX - totalWidthGanaste / 2;
@@ -509,8 +533,9 @@ function dibujarVictoria() {
   }
   
   // Mostrar solo el número 3000 con animación
+  textFont(pixelFont);
   let puntajeStr = "3000";
-  textSize(marco * 0.12);
+  textSize(marco * 0.06);
   let puntajeCharWidth = marco * 0.07;
   let startPuntajeX = centerX - (puntajeStr.length * puntajeCharWidth) / 2;
   let puntajeY = centerY + marco * 0.05;
@@ -534,7 +559,11 @@ function dibujarVictoria() {
   fill(0, 255, 100);
   rect(centerX, btnY, btnW, btnH);
   
-  textAlign(CENTER, CENTER);
+  textFont(pixelFont);
+  fill(255);
+  textSize(marco * 0.04);
+  text("JUGAR DE NUEVO", centerX, btnY);
+  
   let btnText = "JUGAR DE NUEVO";
   textSize(marco * 0.06);
   
@@ -686,6 +715,7 @@ function dibujarTutorial() {
     push();
     rectMode(CENTER);
     textAlign(CENTER, CENTER);
+    textFont(pixelFont);
 
     let marco = min(width, height) * 0.8;
     // Marco exterior NEGRO
@@ -747,14 +777,20 @@ function dibujarTutorial() {
         imageMode(CENTER);
         image(imgsPjs[0], rightX, charY, charW, charH);
         
-        // Dibujar peluca encima
+        // Dibujar peluca volando hacia arriba con animación
         let pelucaW = imgsPelus[0].width * charScale;
         let pelucaH = imgsPelus[0].height * charScale;
-        image(imgsPelus[0], rightX, charY - charH * 0.3, pelucaW, pelucaH);
+        // Animación: la peluca sube y se desvanece
+        let pelucaOffset = (t * 50) % 150; // Sube 150 píxeles y se reinicia
+        let pelucaAlpha = map(pelucaOffset, 0, 150, 255, 0); // Se desvanece mientras sube
+        push();
+        tint(255, pelucaAlpha);
+        image(imgsPelus[0], rightX, charY - charH/2 - pelucaOffset, pelucaW, pelucaH);
+        pop();
         imageMode(CORNER);
     }
     
-    // Sección 2: ESQUIVAR POLICIA (abajo)
+    // Sección 2: ESQUIVAR POLICIA (abajo izquierda)
     let section2Y = centerY + marco * 0.15;
     
     textAlign(LEFT, CENTER);
@@ -790,7 +826,34 @@ function dibujarTutorial() {
         image(seqRati.getActiveImg(), rightX, ratiY, ratiW, ratiH);
         imageMode(CORNER);
     }
-
+    
+    // Sección 3: NAVE Y CONTROLES (centro abajo)
+    let section3Y = centerY + marco * 0.38;
+    
+    // Dibujar la nave
+    if (avion) {
+        let planeX = centerX - marco * 0.2;
+        let planeY = section3Y + sin(t * 6) * 3;
+        
+        push();
+        translate(planeX, planeY);
+        
+        // Dibujar nave simplificada usando el método display2 del avión
+        let tempAvion = new Avion();
+        tempAvion.display2(0, 0);
+        
+        pop();
+    }
+    
+    // Texto instrucciones a la derecha
+    textAlign(LEFT, CENTER);
+    let instrX = centerX + marco * 0.05;
+    
+    fill(255);
+    textSize(marco * 0.045);
+    text("PRESIONA", instrX, section3Y - marco * 0.04);
+    text("PARA VOLAR", instrX, section3Y + marco * 0.02);
+    
     pop();
 }
 
@@ -847,7 +910,6 @@ class Particula {
     
     update() {
         this.pos.add(this.vel);
-        this.vel.y += 0.3; // gravedad
         this.life -= this.lifespeed;
         this.size = map(this.life, 255, 0, this.isRed ? 25 : 22, 0); // Tamaño máximo aumentado
     }

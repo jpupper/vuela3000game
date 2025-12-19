@@ -40,10 +40,14 @@ class Pelus {
           if (p.type == 0) {
             puntomanager.puntos += 100;
             p.modopeluca = 1;
+            p.glitchActive = true;
+            p.glitchStartTime = millis();
             crearParticulasColores(p.pos.x, p.pos.y - p.h/2, 20);
           } else if (p.type == 1) {
             vidas--;
             p.modopeluca = 1;
+            p.glitchActive = true;
+            p.glitchStartTime = millis();
             crearParticulasRojas(_a.pos.x, _a.pos.y, 15);
             if(vidas <= 0){
               Perder();
@@ -74,6 +78,15 @@ class Pelus {
 
       this.pjindex = floor(random(imgsPjs.length));
       this.plindex = floor(random(imgsPelus.length));
+
+      // Glitch animation properties
+      this.glitchActive = false;
+      this.glitchStartTime = 0;
+      this.glitchDuration = 1000; // 1000ms glitch effect
+      this.glitchOffsetX = 0;
+      this.glitchOffsetY = 0;
+      this.glitchScaleX = 1.0;
+      this.glitchScaleY = 1.0;
 
      let imgsc = 0.2;
         if(this.type == 0){
@@ -147,11 +160,30 @@ class Pelus {
             imgsPelus[this.plindex].height*scimg)
         imageMode(CORNER);*/
 
+        // Apply glitch effect if active
+        let drawX = this.pos.x + this.glitchOffsetX;
+        let drawY = this.pos.y + this.glitchOffsetY;
+        let drawW = this.w * this.glitchScaleX;
+        let drawH = this.h * this.glitchScaleY;
+        
+        // Draw character with glitch effect
+        if(this.glitchActive) {
+          // Draw multiple offset copies for glitch effect with scale variation
+          push();
+          tint(255, 0, 0, 150);
+          image(imgsPjs[this.pjindex], drawX - 5, drawY, drawW * 0.95, drawH * 1.05);
+          tint(0, 255, 0, 150);
+          image(imgsPjs[this.pjindex], drawX + 5, drawY, drawW * 1.05, drawH * 0.95);
+          tint(0, 0, 255, 150);
+          image(imgsPjs[this.pjindex], drawX, drawY - 5, drawW, drawH);
+          pop();
+        }
+        
         image(imgsPjs[this.pjindex],
-            this.pos.x,
-            this.pos.y,
-            this.w,
-            this.h);
+            drawX,
+            drawY,
+            drawW,
+            drawH);
         image(imgsPelus[this.plindex],
             this.pospeluc.x,
             this.pospeluc.y - this.h,
@@ -167,7 +199,27 @@ class Pelus {
         rect(this.pos.x,this.pos.y,this.w,this.h);*/
         seqRati.update();
         imageMode(CENTER);
-        image(seqRati.getActiveImg(),this.pos.x,this.pos.y,this.w,this.h);
+        
+        // Apply glitch effect if active (for police)
+        let drawX = this.pos.x + this.glitchOffsetX;
+        let drawY = this.pos.y + this.glitchOffsetY;
+        let drawW = this.w * this.glitchScaleX;
+        let drawH = this.h * this.glitchScaleY;
+        
+        // Draw police with glitch effect
+        if(this.glitchActive) {
+          // Draw multiple offset copies for glitch effect with scale variation
+          push();
+          tint(255, 0, 0, 150);
+          image(seqRati.getActiveImg(), drawX - 5, drawY, drawW * 0.95, drawH * 1.05);
+          tint(0, 255, 0, 150);
+          image(seqRati.getActiveImg(), drawX + 5, drawY, drawW * 1.05, drawH * 0.95);
+          tint(0, 0, 255, 150);
+          image(seqRati.getActiveImg(), drawX, drawY - 5, drawW, drawH);
+          pop();
+        }
+        
+        image(seqRati.getActiveImg(), drawX, drawY, drawW, drawH);
         
     }
     imageMode(CORNER);
@@ -199,6 +251,24 @@ class Pelus {
       }else if(this.modopeluca == 1){
         this.pospeluc.x+= this.velpeluc2.x;
         this.pospeluc.y+= this.velpeluc2.y;
+      }
+      
+      // Update glitch animation
+      if(this.glitchActive) {
+        let elapsed = millis() - this.glitchStartTime;
+        if(elapsed < this.glitchDuration) {
+          // Generate random glitch offsets and scale variations
+          this.glitchOffsetX = random(-15, 15);
+          this.glitchOffsetY = random(-15, 15);
+          this.glitchScaleX = random(0.85, 1.15);
+          this.glitchScaleY = random(0.85, 1.15);
+        } else {
+          this.glitchActive = false;
+          this.glitchOffsetX = 0;
+          this.glitchOffsetY = 0;
+          this.glitchScaleX = 1.0;
+          this.glitchScaleY = 1.0;
+        }
       }
     }
   }
