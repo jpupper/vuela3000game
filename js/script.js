@@ -155,8 +155,12 @@ function keyPressed(){
   if(key == '5') pantalla = 4;
   if(key == '6') pantalla = 5;
   
-  if(keyCode === 34 || keyCode === 33 || key === ' '){
+  if(keyCode === 34 || key === ' ' || key === 'b' || key === 'B'){
     handleButtonPress();
+  }
+  
+  if(keyCode === 33){
+    handlePreviousButton();
   }
 }
 
@@ -169,12 +173,26 @@ function handleButtonPress() {
     tutorial.start();
   }
   if(pantalla == 2 || pantalla == 3){
-    if (millis() - ltgameover > durgameover) {
-      restart();
-    }
+    restart();
   }
   if(pantalla == 5){
     highscore.confirmLetter();
+  }
+}
+
+function handlePreviousButton() {
+  if(pantalla == 1){
+    avion.jump();
+  }
+  if(pantalla == 0){
+    pantalla = 4;
+    tutorial.start();
+  }
+  if(pantalla == 2 || pantalla == 3){
+    restart();
+  }
+  if(pantalla == 5){
+    highscore.previousLetterInput();
   }
 }
 
@@ -273,22 +291,14 @@ function dibujarGameOver() {
   image(seqAnifinal.getActiveImg(), width/2, height/2, size, size);
   imageMode(CORNER);
   
-  let elapsedTime = millis() - ltgameover;
-  let waitTime = durgameover;
-  
-  if (elapsedTime <= waitTime) {
+  if(highscore.checkIfInTop10(puntomanager.puntos)) {
     push();
     textFont(pixelFont);
     textAlign(CENTER, CENTER);
     fill(255);
     textSize(40);
-    text("ESPERA " + ceil((waitTime - elapsedTime)/1000), width/2, height - 100);
+    text("PRESIONA PARA CONTINUAR", width/2, height - 100);
     pop();
-  } else {
-    if(highscore.checkIfInTop10(puntomanager.puntos)) {
-      pantalla = 5;
-      highscore.startNameEntry(puntomanager.puntos);
-    }
   }
 }
 

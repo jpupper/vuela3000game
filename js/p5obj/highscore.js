@@ -129,6 +129,13 @@ class Highscore {
         this.currentName[this.currentLetterIndex] = String.fromCharCode(charCode);
     }
     
+    previousLetter() {
+        let charCode = this.currentName[this.currentLetterIndex].charCodeAt(0);
+        charCode--;
+        if(charCode < 65) charCode = 90;
+        this.currentName[this.currentLetterIndex] = String.fromCharCode(charCode);
+    }
+    
     advanceToNextPosition() {
         if(!this.isEnteringName) return;
         
@@ -151,6 +158,18 @@ class Highscore {
         }
         
         this.changeLetter();
+        this.lastLetterChangeTime = millis();
+    }
+    
+    previousLetterInput() {
+        if(!this.isEnteringName) return;
+        
+        if(!this.firstButtonPress) {
+            this.firstButtonPress = true;
+            this.lastLetterChangeTime = millis();
+        }
+        
+        this.previousLetter();
         this.lastLetterChangeTime = millis();
     }
     

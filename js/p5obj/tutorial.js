@@ -145,17 +145,20 @@ class Tutorial {
             translate(planeX, planeY);
             
             for(let i = 0; i < 3; i++) {
-                let fireX = -30 - i * 15;
+                let fireX = -30 - i * 15 + sin(t * 10 + i) * 5;
                 let fireY = random(-5, 5);
-                let fireSize = random(8, 15);
+                let fireSize = map(sin(t * 8 + i * 2), -1, 1, 8, 15);
                 let fireColor = getPamiColor3(random(1));
                 fill(fireColor);
                 rectMode(CENTER);
-                rect(fireX, fireY, fireSize, fireSize);
+                
+                let nx = map(noise(i * 5234 + millis() * 0.0005), 0, 1, -10, 10);
+                let ny = map(noise(i * 7276 + millis() * 0.0005), 0, 1, -10, 10);
+                rect(fireX + nx, fireY + ny, fireSize + nx * 0.5, fireSize + ny * 0.5);
             }
             
             let tempAvion = new Avion();
-            tempAvion.seed = 1234;
+            tempAvion.seed = 9999;
             tempAvion.display2(0, 0);
             
             pop();
