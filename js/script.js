@@ -11,6 +11,10 @@ let lttutorial;
 let durtutorial = 3000;
 let vidas;
 
+let highscore;
+let tutorial;
+let winnerMessageShown = false;
+
 let sh;
 let pg;
 
@@ -43,6 +47,8 @@ function preload(){
   }
   seqRati = new pngSequence("img/rati",2,0);
   puntomanager = new Puntaje();
+  highscore = new Highscore();
+  tutorial = new Tutorial();
 }
 
 function setup() {
@@ -88,10 +94,11 @@ function restart() {
   avion = new Avion();
   puntos = 0;
   pelus = new Pelus();
-  durgameover = 3000; // 3 segundos obligatorio
+  durgameover = 3000;
   ltgameover = millis();
   puntomanager.puntos = 0;
   vidas = 3;
+  winnerMessageShown = false;
 }
 function Perder(){
   pantalla = 2;
@@ -106,9 +113,7 @@ function draw() {
     dibujarStart();
   }
   if (pantalla == 1) {
-  
     dibujarJuego();
-
   }
   if (pantalla == 2) {
     dibujarGameOver();
@@ -117,7 +122,14 @@ function draw() {
     dibujarVictoria();
   }
   if (pantalla == 4) {
-    dibujarTutorial();
+    dibujarFondo();
+    tutorial.update();
+    tutorial.display();
+  }
+  if (pantalla == 5) {
+    dibujarFondo();
+    highscore.update();
+    highscore.display();
   }
   /*background(0);
   fill(255,0,0);
@@ -135,44 +147,43 @@ function keyPressed(){
   if(key == "d"){
     debugmode = !debugmode;
   }
-    if(keyCode === 34 || keyCode === 33 || key === ' '){
-      if(pantalla == 1){
-        avion.jump();
-      }
-      if(pantalla == 0){
-        pantalla = 4; // Ir a tutorial
-        lttutorial = millis();
-      }
-      if(pantalla == 2 || pantalla == 3){
-        if (millis() - ltgameover > durgameover) {
-            restart();
-        }
-      }
+  
+  if(key == '1') pantalla = 0;
+  if(key == '2') pantalla = 1;
+  if(key == '3') pantalla = 2;
+  if(key == '4') pantalla = 3;
+  if(key == '5') pantalla = 4;
+  if(key == '6') pantalla = 5;
+  
+  if(keyCode === 34 || keyCode === 33 || key === ' '){
+    handleButtonPress();
+  }
+}
+
+function handleButtonPress() {
+  if(pantalla == 1){
+    avion.jump();
+  }
+  if(pantalla == 0){
+    pantalla = 4;
+    tutorial.start();
+  }
+  if(pantalla == 2 || pantalla == 3){
+    if (millis() - ltgameover > durgameover) {
+      restart();
     }
+  }
+  if(pantalla == 5){
+    highscore.confirmLetter();
+  }
 }
 
 function mousePressed() {
-  if (pantalla == 0) {
-    pantalla = 4; // Ir a tutorial
-    lttutorial = millis();
-  }
-  if (pantalla == 2 || pantalla == 3) {
-    if (millis() - ltgameover > durgameover) {
-        restart();
-    }
-  }
+  handleButtonPress();
 }
 
 function touchPressed(){
-  if (pantalla == 0) {
-    pantalla = 4; // Ir a tutorial
-    lttutorial = millis();
-  }
-  if (pantalla == 2 || pantalla == 3) {
-    if (millis() - ltgameover > durgameover) {
-        restart();
-    }
-  }
+  handleButtonPress();
 }
 
 function dibujarFondo() {
@@ -191,11 +202,8 @@ function dibujarStart(){
   seqStart.speed = 0.1;
   //seqStart.display();
   imageMode(CENTER);
-  if(windowWidth > windowHeight){
-    image(seqStart.getActiveImg(),windowWidth/2,windowHeight/2,windowHeight,windowHeight);
-  }else{
-    image(seqStart.getActiveImg(),windowWidth/2,windowHeight/2,windowWidth,windowWidth);
-  }
+  image(seqStart.getActiveImg(),windowWidth/2,windowHeight/2,windowHeight,windowHeight);
+  
   imageMode(CORNER);
   textAlign(CENTER,CENTER);
   fill(255);
@@ -224,19 +232,36 @@ function dibujarJuego() {
   
   dibujarVidas();
 
-  if(puntomanager.puntos >= 3000){
-    Ganar();
+  if(puntomanager.puntos >= 3000 && !winnerMessageShown){
+    winnerMessageShown = true;
+    mostrarMensajeGanador();
   }
+  
+  if(winnerMessageShown) {
+    push();
+    textFont(pixelFont);
+    textAlign(CENTER, CENTER);
+    let t = millis() * 0.003;
+    let pulse = 1 + sin(t * 5) * 0.1;
+    textSize(60 * pulse);
+    for(let i = 0; i < "GANADOR!".length; i++) {
+      let charCol = (i + floor(t * 4)) % 2 == 0 ? color(254, 235, 44) : color(255, 161, 8);
+      fill(charCol);
+      text("GANADOR!"[i], width/2 - 180 + i * 60, height/2 - 150);
+    }
+    pop();
+  }
+}
+
+function mostrarMensajeGanador() {
 }
 
 function dibujarGameOver() {
   dibujarFondo();
   
-  // Actualizar y mostrar la secuencia de animación de PERDISTE
   seqAnifinal.update();
   seqAnifinal.speed = 0.1;
   
-  // Dibujar la imagen centrada a la mitad del tamaño
   imageMode(CENTER);
   let size;
   if(windowWidth > windowHeight){
@@ -248,12 +273,10 @@ function dibujarGameOver() {
   image(seqAnifinal.getActiveImg(), width/2, height/2, size, size);
   imageMode(CORNER);
   
-  // Verificar si puede reiniciar después del tiempo de espera
   let elapsedTime = millis() - ltgameover;
   let waitTime = durgameover;
   
   if (elapsedTime <= waitTime) {
-    // Mostrar mensaje de espera
     push();
     textFont(pixelFont);
     textAlign(CENTER, CENTER);
@@ -261,17 +284,20 @@ function dibujarGameOver() {
     textSize(40);
     text("ESPERA " + ceil((waitTime - elapsedTime)/1000), width/2, height - 100);
     pop();
+  } else {
+    if(highscore.checkIfInTop10(puntomanager.puntos)) {
+      pantalla = 5;
+      highscore.startNameEntry(puntomanager.puntos);
+    }
   }
 }
 
 function dibujarVictoria() {
   dibujarFondo();
   
-  // Actualizar y mostrar la secuencia de animación de GANASTE
   seqWin.update();
   seqWin.speed = 0.1;
   
-  // Dibujar la imagen centrada a la mitad del tamaño
   imageMode(CENTER);
   let size;
   if(windowWidth > windowHeight){
@@ -282,33 +308,12 @@ function dibujarVictoria() {
   
   image(seqWin.getActiveImg(), width/2, height/2, size, size);
   imageMode(CORNER);
-  
-  // Auto-reiniciar después de un tiempo
-  if(millis() - ltgameover > durgameover * 3){
-    restart();
-  }
 }
 
 function resize(){
   createCanvas(windowWidth, windowHeight);
   pg = createGraphics(windowWidth ,windowHeight,WEBGL);
   pg.translate(-windowWidth/2,-windowHeight/2)
-}
-function mousePressed() {
-  if (pantalla == 0) {
-    pantalla = 1;
-  }
-  if (pantalla == 2 || pantalla == 3) {
-    restart();
-  }
-}
-function touchPressed(){
-  if (pantalla == 0) {
-    pantalla = 1;
-  }
-  if (pantalla == 2 || pantalla == 3) {
-    restart();
-  }
 }
 
 function getPamiColor(valor) {
@@ -400,167 +405,6 @@ function getPamiColor3(valor) {
   return colorInterpolado;
 }
 
-function dibujarTutorial() {
-    dibujarFondo();
-    
-    let t = millis() * 0.001;
-    let centerX = width / 2;
-    let centerY = height / 2;
-    
-    let elapsedTime = millis() - lttutorial;
-    let remainingTime = ceil((durtutorial - elapsedTime) / 1000);
-    
-    if (elapsedTime > durtutorial) {
-        pantalla = 1;
-        return;
-    }
-
-    push();
-    rectMode(CENTER);
-    textAlign(CENTER, CENTER);
-    textFont(pixelFont);
-
-    let marco = min(width, height) * 0.8;
-    // Marco exterior NEGRO
-    fill(0);
-    rect(centerX, centerY, marco + 60, marco + 60);
-    // Marco medio BLANCO
-    fill(255);
-    rect(centerX, centerY, marco + 40, marco + 40);
-    // Marco interior COLOR (morado)
-    fill(130, 117, 154);
-    rect(centerX, centerY, marco, marco);
-
-    // Contador en la parte superior
-    textSize(marco * 0.15);
-    let contadorStr = str(remainingTime);
-    for (let i = 0; i < contadorStr.length; i++) {
-        let charCol = (i + floor(t * 4)) % 2 == 0 ? color(254, 235, 44) : color(255, 161, 8);
-        fill(charCol);
-        text(contadorStr[i], centerX + (i - contadorStr.length/2 + 0.5) * marco * 0.1, centerY - marco * 0.38);
-    }
-
-    // Sección 1: PERSONAJE BUENO (arriba)
-    let section1Y = centerY - marco * 0.15;
-    
-    // Texto a la izquierda
-    textAlign(LEFT, CENTER);
-    let leftX = centerX - marco * 0.35;
-    
-    let texto1 = "PERSONAJE";
-    textSize(marco * 0.07);
-    let charWidth1 = marco * 0.045;
-    for (let i = 0; i < texto1.length; i++) {
-        let charCol = (i + floor(t * 3)) % 2 == 0 ? color(255) : color(254, 235, 44);
-        fill(charCol);
-        text(texto1[i], leftX + i * charWidth1, section1Y - marco * 0.05);
-    }
-    
-    let texto2 = "BUENO";
-    for (let i = 0; i < texto2.length; i++) {
-        let charCol = (i + floor(t * 3)) % 2 == 0 ? color(255) : color(254, 235, 44);
-        fill(charCol);
-        text(texto2[i], leftX + i * charWidth1, section1Y + marco * 0.02);
-    }
-    
-    fill(255);
-    textSize(marco * 0.045);
-    text("(SACARLE", leftX, section1Y + marco * 0.08);
-    text("LA PELUCA)", leftX, section1Y + marco * 0.12);
-    
-    // PNG a la derecha - Personaje con peluca (tipo 0)
-    if (imgsPjs && imgsPjs.length > 0 && imgsPelus && imgsPelus.length > 0) {
-        let rightX = centerX + marco * 0.15;
-        let charY = section1Y + sin(t * 4) * 5;
-        
-        let charScale = 0.25;
-        let charW = imgsPjs[0].width * charScale;
-        let charH = imgsPjs[0].height * charScale;
-        
-        imageMode(CENTER);
-        image(imgsPjs[0], rightX, charY, charW, charH);
-        
-        // Dibujar peluca volando hacia arriba con animación
-        let pelucaW = imgsPelus[0].width * charScale;
-        let pelucaH = imgsPelus[0].height * charScale;
-        // Animación: la peluca sube y se desvanece, spawneando desde la cabeza
-        let pelucaOffset = (t * 50) % 150; // Sube 150 píxeles y se reinicia
-        let pelucaAlpha = map(pelucaOffset, 0, 150, 255, 0); // Se desvanece mientras sube
-        let pelucaStartY = charY - charH/2; // Spawn en la cabeza del personaje
-        push();
-        tint(255, pelucaAlpha);
-        image(imgsPelus[0], rightX, pelucaStartY - pelucaOffset, pelucaW, pelucaH);
-        pop();
-        imageMode(CORNER);
-    }
-    
-    // Sección 2: ESQUIVAR POLICIA (abajo izquierda)
-    let section2Y = centerY + marco * 0.15;
-    
-    textAlign(LEFT, CENTER);
-    
-    let texto3 = "ESQUIVAR";
-    textSize(marco * 0.07);
-    let charWidth2 = marco * 0.045;
-    for (let i = 0; i < texto3.length; i++) {
-        let charCol = (i + floor(t * 3.5)) % 2 == 0 ? color(255) : color(255, 7, 78);
-        fill(charCol);
-        text(texto3[i], leftX + i * charWidth2, section2Y - marco * 0.05);
-    }
-    
-    let texto4 = "POLICIA";
-    for (let i = 0; i < texto4.length; i++) {
-        let charCol = (i + floor(t * 3.5)) % 2 == 0 ? color(255) : color(255, 7, 78);
-        fill(charCol);
-        text(texto4[i], leftX + i * charWidth2, section2Y + marco * 0.02);
-    }
-    
-    // PNG a la derecha - Policía (seqRati)
-    if (seqRati) {
-        let rightX = centerX + marco * 0.15;
-        let ratiY = section2Y + sin(t * 5) * 5;
-        
-        let ratiScale = 0.25; 
-        let ratiW = seqRati.getW() * ratiScale;
-        let ratiH = seqRati.getH() * ratiScale;
-        
-        seqRati.update(); 
-        
-        imageMode(CENTER);
-        image(seqRati.getActiveImg(), rightX, ratiY, ratiW, ratiH);
-        imageMode(CORNER);
-    }
-    
-    // Sección 3: NAVE Y CONTROLES (centro abajo)
-    let section3Y = centerY + marco * 0.38;
-    
-    // Dibujar la nave
-    if (avion) {
-        let planeX = centerX - marco * 0.2;
-        let planeY = section3Y + sin(t * 6) * 3;
-        
-        push();
-        translate(planeX, planeY);
-        
-        // Dibujar nave simplificada con seed fijo para evitar cambio de colores
-        let tempAvion = new Avion();
-        tempAvion.seed = 1234; // Seed fijo para colores consistentes
-        tempAvion.display2(0, 0);
-        
-        pop();
-    }
-    
-    // Texto instrucciones a la derecha
-    textAlign(LEFT, CENTER);
-    let instrX = centerX + marco * 0.05;
-    
-    fill(255);
-    textSize(marco * 0.045);
-    text("PRESIONA", instrX, section3Y - marco * 0.04);
-    text("PARA VOLAR", instrX, section3Y + marco * 0.02);
-    
-    pop();
-}
 
 function dibujarVidas() {
     let heartSize = 25;
@@ -671,3 +515,4 @@ function dibujarParticulas() {
         p.display();
     }
 }
+

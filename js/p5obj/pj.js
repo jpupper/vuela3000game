@@ -1,9 +1,9 @@
-
 class Pelus {
     constructor() {
       this.pls = [];
       this.lasttime = 0;
       this.duration = 400;
+      this.baseDuration = 400;
     }
   
     display() {
@@ -13,6 +13,8 @@ class Pelus {
     }
   
     update() {
+      this.updateDifficulty();
+      
       for (let i = this.pls.length - 1; i >= 0; i--) {
         this.pls[i].update();
         if(this.pls[i].pos.x < 0){
@@ -23,6 +25,22 @@ class Pelus {
         this.lasttime = millis();
         this.addParticle(width + 100, random(height));
       }
+    }
+    
+    updateDifficulty() {
+      let score = puntomanager.puntos;
+      
+      let difficultyFactor = 1 + (score / 1000) * 0.5;
+      difficultyFactor = constrain(difficultyFactor, 1, 3);
+      
+      this.duration = this.baseDuration / difficultyFactor;
+      this.duration = constrain(this.duration, 150, this.baseDuration);
+    }
+    
+    getSpeedMultiplier() {
+      let score = puntomanager.puntos;
+      let speedMult = 1 + (score / 1000) * 0.3;
+      return constrain(speedMult, 1, 2.5);
     }
   
     addParticle(_x, _y) {
@@ -62,11 +80,19 @@ class Pelus {
   class Peluc {
     constructor(_x, _y) {
       this.pos = createVector(_x, _y);
-      this.speed = createVector(-random(3, 5), 0);
+      
+      let baseSpeed = random(3, 5);
+      let speedMult = pelus.getSpeedMultiplier();
+      this.speed = createVector(-baseSpeed * speedMult, 0);
+      
       this.accel = createVector(0, 0);
       this.w = 120;
       this.h = 100;
-      this.type = random(1) > .8 ? 1 : 0;
+      
+      let score = puntomanager.puntos;
+      let policeChance = 0.2 + (score / 3000) * 0.3;
+      policeChance = constrain(policeChance, 0.2, 0.5);
+      this.type = random(1) > policeChance ? 0 : 1;
       this.c1 = this.type == 0 ? color(random(200), 255, random(200)) : color(random(255), 0, 0);
       this.seed = random(5000);
 
